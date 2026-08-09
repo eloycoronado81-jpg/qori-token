@@ -1,6 +1,6 @@
 export default function Navbar() {
   return (
-    <nav className="bg-black text-white p-5">
+    <nav className="sticky top-0 z-50 bg-black text-white p-5 shadow-lg">
       <div className="max-w-7xl mx-auto flex justify-between items-center">
 
         <h1 className="text-3xl font-bold text-yellow-400">
