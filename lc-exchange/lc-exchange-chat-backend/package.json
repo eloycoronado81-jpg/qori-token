@@ -1,0 +1,17 @@
+{
+  "name": "lc-exchange-chat-backend",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Backend que conecta el widget de chat de LC Exchange con la API de Claude (Anthropic).",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.32.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2"
+  }
+}

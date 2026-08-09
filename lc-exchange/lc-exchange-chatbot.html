@@ -1,0 +1,202 @@
+<!--
+  LC Exchange - Widget de chat flotante
+  Pega este bloque en cualquier página del sitio (WordPress: bloque "HTML personalizado").
+  No depende del stack del sitio (funciona sobre WordPress, React, etc.).
+
+  Antes de publicar:
+  1. Cambia API_URL por la URL real del backend (lc-exchange-chat-backend), p.ej.
+     "https://api.lc-exchange.com/chat".
+  2. Revisa el endpoint /rate del backend para que devuelva la tasa real.
+-->
+<div id="lcx-chat-root"></div>
+
+<style>
+  #lcx-chat-root * { box-sizing: border-box; font-family: -apple-system, "Segoe UI", Roboto, sans-serif; }
+
+  #lcx-chat-button {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    z-index: 9999;
+    background: #0b1220;
+    color: #fff;
+    border-radius: 999px;
+    padding: 12px 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 8px 24px rgba(0,0,0,.25);
+    cursor: pointer;
+    border: none;
+  }
+  #lcx-chat-button .lcx-rate {
+    font-size: 12px;
+    opacity: .8;
+  }
+
+  #lcx-chat-panel {
+    position: fixed;
+    right: 24px;
+    bottom: 90px;
+    z-index: 9999;
+    width: 340px;
+    max-width: calc(100vw - 32px);
+    height: 460px;
+    max-height: calc(100vh - 140px);
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 12px 40px rgba(0,0,0,.3);
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  #lcx-chat-panel.lcx-open { display: flex; }
+
+  #lcx-chat-header {
+    background: #0b1220;
+    color: #fff;
+    padding: 14px 16px;
+    font-weight: 600;
+  }
+  #lcx-chat-header small {
+    display: block;
+    font-weight: 400;
+    opacity: .7;
+    font-size: 11px;
+  }
+
+  #lcx-chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: #f7f8fa;
+  }
+
+  .lcx-msg {
+    max-width: 85%;
+    padding: 8px 12px;
+    border-radius: 12px;
+    font-size: 14px;
+    line-height: 1.4;
+  }
+  .lcx-msg.lcx-bot { background: #fff; border: 1px solid #e6e6e6; align-self: flex-start; }
+  .lcx-msg.lcx-user { background: #0b1220; color: #fff; align-self: flex-end; }
+
+  #lcx-chat-form {
+    display: flex;
+    border-top: 1px solid #eee;
+  }
+  #lcx-chat-input {
+    flex: 1;
+    border: none;
+    padding: 12px;
+    font-size: 14px;
+    outline: none;
+  }
+  #lcx-chat-send {
+    border: none;
+    background: #0b1220;
+    color: #fff;
+    padding: 0 16px;
+    cursor: pointer;
+  }
+  #lcx-chat-send:disabled { opacity: .5; cursor: default; }
+</style>
+
+<script>
+(function () {
+  // 1) Configura aquí la URL real del backend antes de publicar.
+  var API_URL = "https://REEMPLAZAR-CON-TU-DOMINIO/chat";
+  var RATE_URL = "https://REEMPLAZAR-CON-TU-DOMINIO/rate";
+
+  var root = document.getElementById("lcx-chat-root");
+
+  var button = document.createElement("button");
+  button.id = "lcx-chat-button";
+  button.innerHTML = '<span>💬 Habla con nosotros</span><span class="lcx-rate" id="lcx-rate-ticker">Cargando tasa…</span>';
+
+  var panel = document.createElement("div");
+  panel.id = "lcx-chat-panel";
+  panel.innerHTML =
+    '<div id="lcx-chat-header">LC Exchange<small>Respuesta automática · horario referencial</small></div>' +
+    '<div id="lcx-chat-messages"></div>' +
+    '<form id="lcx-chat-form">' +
+    '  <input id="lcx-chat-input" type="text" placeholder="Escribe tu mensaje…" autocomplete="off" />' +
+    '  <button id="lcx-chat-send" type="submit">Enviar</button>' +
+    '</form>';
+
+  root.appendChild(panel);
+  root.appendChild(button);
+
+  var messagesEl = panel.querySelector("#lcx-chat-messages");
+  var formEl = panel.querySelector("#lcx-chat-form");
+  var inputEl = panel.querySelector("#lcx-chat-input");
+  var sendBtn = panel.querySelector("#lcx-chat-send");
+  var history = [];
+
+  function addMessage(role, text) {
+    var div = document.createElement("div");
+    div.className = "lcx-msg " + (role === "user" ? "lcx-user" : "lcx-bot");
+    div.textContent = text;
+    messagesEl.appendChild(div);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
+
+  button.addEventListener("click", function () {
+    panel.classList.toggle("lcx-open");
+    if (panel.classList.contains("lcx-open") && messagesEl.children.length === 0) {
+      addMessage("bot", "¡Hola! Soy el asistente de LC Exchange. Puedo ayudarte con tipo de cambio referencial, métodos de pago y el proceso de cambio. ¿En qué te ayudo?");
+    }
+  });
+
+  formEl.addEventListener("submit", function (e) {
+    e.preventDefault();
+    var text = inputEl.value.trim();
+    if (!text) return;
+
+    addMessage("user", text);
+    history.push({ role: "user", content: text });
+    inputEl.value = "";
+    sendBtn.disabled = true;
+
+    fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: text, history: history })
+    })
+      .then(function (res) {
+        if (!res.ok) throw new Error("bad_response");
+        return res.json();
+      })
+      .then(function (data) {
+        var reply = data && data.reply ? data.reply : "Disculpa, no pude procesar tu mensaje. Intenta de nuevo.";
+        addMessage("bot", reply);
+        history.push({ role: "assistant", content: reply });
+      })
+      .catch(function () {
+        addMessage("bot", "Hubo un problema de conexión. Por favor intenta más tarde o contáctanos directamente.");
+      })
+      .finally(function () {
+        sendBtn.disabled = false;
+      });
+  });
+
+  // Ticker de tasa (opcional): si RATE_URL no está configurado o falla, oculta el ticker en vez de mostrar un dato falso.
+  var tickerEl = button.querySelector("#lcx-rate-ticker");
+  fetch(RATE_URL)
+    .then(function (res) { if (!res.ok) throw new Error("no_rate"); return res.json(); })
+    .then(function (data) {
+      if (data && data.rate) {
+        tickerEl.textContent = "USD/PEN " + data.rate;
+      } else {
+        tickerEl.remove();
+      }
+    })
+    .catch(function () {
+      tickerEl.remove();
+    });
+})();
+</script>
