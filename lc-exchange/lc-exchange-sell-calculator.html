@@ -4,7 +4,8 @@
   página nueva o dentro de un <iframe>). No depende del stack del sitio.
 
   ANTES DE PUBLICAR, revisa/ajusta en el bloque <script> más abajo:
-  - USDT_BUY_DISCOUNT_PCT y FX_MARGIN_PCT: tus márgenes reales de compra.
+  - LC_PROFIT_USD: ganancia FIJA en USD por operación (no un porcentaje).
+  - MIN_USDT_AMOUNT: monto mínimo para que esa ganancia fija sea razonable.
   - NETWORK_FEES_USDT: comisión real por red (hoy son valores de ejemplo).
   - RATE_API_URL: si despliegas lc-exchange-chat-backend, apunta aquí a su
     endpoint /rate para evitar pegarle directo a CoinGecko desde el navegador
@@ -191,6 +192,8 @@
   .lcx-support-email { display:block; text-align:center; font-size:12px; color: var(--muted); margin-top:8px; }
 
   .lcx-warning { background: #3a1f1f; border: 1px solid #6b2c2c; color: #ffb4b4; font-size:12px; padding:8px 12px; border-radius:8px; margin-bottom: 16px; display:none; }
+  .lcx-min-amount-warning { background: #3a2f1f; border: 1px solid #6b512c; color: #ffcf9a; font-size:12px; padding:8px 10px; border-radius:8px; margin-top: 8px; }
+  .lcx-profit-flat-note { font-size: 11px; color: var(--muted); margin: 0 0 10px; line-height: 1.4; }
   .lcx-warning.lcx-show { display:block; }
 </style>
 </head>
@@ -247,6 +250,7 @@
       <label>Cantidad de USDT</label>
       <input type="number" id="lcx-amount" value="1000" min="0" step="1" />
       <div class="lcx-quick" id="lcx-quick-amounts"></div>
+      <div class="lcx-min-amount-warning" id="lcx-min-amount-warning" style="display:none;"></div>
 
       <h3 style="margin-top:20px;"><span class="lcx-num-green">2.</span> DESTINO QUE ELIGE EL CLIENTE</h3>
       <label>¿En qué moneda deseas entregarle?</label>
@@ -273,7 +277,7 @@
           </div>
           <div class="lcx-detail-grid">
             <div class="lcx-detail-row"><span>Cantidad de USDT</span><span id="lcx-d-amount">—</span></div>
-            <div class="lcx-detail-row"><span>Descuento aplicado</span><span id="lcx-d-discount" class="lcx-neg">—</span></div>
+            <div class="lcx-detail-row"><span>Ganancia de LC (fija)</span><span id="lcx-d-discount" class="lcx-neg">—</span></div>
             <div class="lcx-detail-row"><span>Precio de mercado</span><span id="lcx-d-market">—</span></div>
             <div class="lcx-detail-row"><span>Comisión de red</span><span id="lcx-d-fee">—</span></div>
             <div class="lcx-detail-row"><span>Valor de referencia</span><span id="lcx-d-ref">—</span></div>
@@ -295,14 +299,13 @@
         <div class="lcx-result-body">
           <div class="lcx-result-row">
             <div>
-              <div class="lcx-market-label">Tipo de cambio USD/PEN que aplicamos</div>
+              <div class="lcx-market-label">Tipo de cambio USD/PEN (mercado, sin margen)</div>
               <div class="lcx-result-big" id="lcx-fx-rate">—</div>
             </div>
             <div class="lcx-result-small">Monto final en soles<br><span class="lcx-result-big" id="lcx-total-pen" style="color:var(--purple)">—</span></div>
           </div>
           <div class="lcx-detail-grid">
             <div class="lcx-detail-row"><span>Precio en USD (Opción 1)</span><span id="lcx-d-usd1">—</span></div>
-            <div class="lcx-detail-row"><span>Margen cambiario aplicado</span><span id="lcx-d-fxmargin" class="lcx-neg">—</span></div>
             <div class="lcx-detail-row"><span>Tipo de cambio de referencia</span><span id="lcx-d-fxref">—</span></div>
             <div class="lcx-detail-row lcx-total"><span>TOTAL RECIBE (PEN)</span><span id="lcx-d-total-pen">—</span></div>
           </div>
@@ -325,29 +328,16 @@
 
       <div id="lcx-profit-content">
         <div class="lcx-profit-card">
-          <h4>🪙 Margen en compra de USDT</h4>
-          <div class="lcx-profit-row"><span>Precio de mercado</span><span id="lcx-p-market">—</span></div>
-          <div class="lcx-profit-row"><span>Tu tasa de compra</span><span id="lcx-p-buyrate">—</span></div>
-          <div class="lcx-profit-row"><span>Margen por USDT</span><span id="lcx-p-margin-usdt">—</span></div>
-          <div class="lcx-profit-row lcx-total"><span>Margen total</span><span class="lcx-profit-total-usd" id="lcx-p-margin-total-usd">—</span></div>
-        </div>
-
-        <div class="lcx-profit-card">
-          <h4>🔁 Margen cambiario (USD → PEN)</h4>
-          <div class="lcx-profit-row"><span>Tipo de cambio referencia</span><span id="lcx-p-fxref">—</span></div>
-          <div class="lcx-profit-row"><span>Tu tipo de cambio aplicado</span><span id="lcx-p-fxapplied">—</span></div>
-          <div class="lcx-profit-row"><span>Margen por USD</span><span id="lcx-p-margin-fx">—</span></div>
-          <div class="lcx-profit-row lcx-total"><span>Margen total</span><span class="lcx-profit-total-pen" id="lcx-p-margin-total-pen">—</span></div>
-        </div>
-
-        <div class="lcx-profit-card">
-          <h4>💰 Utilidad total estimada</h4>
-          <div class="lcx-profit-row"><span>En USD</span><span id="lcx-p-total-usd">—</span></div>
-          <div class="lcx-profit-row"><span>En PEN (aprox.)</span><span id="lcx-p-total-pen">—</span></div>
-          <div class="lcx-profit-final">
-            <div class="lcx-market-label">Equivalente total (PEN)</div>
-            <div class="lcx-value" id="lcx-p-total-equiv">—</div>
-          </div>
+          <h4>💰 Ganancia fija de LC Exchange</h4>
+          <p class="lcx-profit-flat-note">
+            Ganamos siempre lo mismo por operación, sin importar el monto — no un
+            porcentaje. Así, entre más grande la venta, mejor tasa efectiva recibe
+            el cliente (comparado con un margen porcentual como el de otros exchanges).
+          </p>
+          <div class="lcx-profit-row"><span>Precio de mercado (USDT)</span><span id="lcx-p-market">—</span></div>
+          <div class="lcx-profit-row"><span>Tasa efectiva de compra</span><span id="lcx-p-buyrate">—</span></div>
+          <div class="lcx-profit-row lcx-total"><span>Ganancia de LC (fija)</span><span class="lcx-profit-total-usd" id="lcx-p-profit-usd">—</span></div>
+          <div class="lcx-profit-row"><span>Equivalente en soles</span><span id="lcx-p-profit-pen">—</span></div>
         </div>
       </div>
     </div>
@@ -412,11 +402,14 @@
 <script>
 (function () {
   // ====== CONFIGURACIÓN DEL NEGOCIO (ajustar antes de publicar) ======
-  // Márgenes bajados a propósito para quedar por debajo del spread típico
-  // que se suele ver en otros exchanges para USDT/PEN (revisa OTHER_EXCHANGES_SPREAD_PCT
-  // más abajo). Ajusta ambos según lo que tu operación realmente pueda sostener.
-  var USDT_BUY_DISCOUNT_PCT = 0.004;  // 0.4% de descuento al comprar USDT (tu margen)
-  var FX_MARGIN_PCT = 0.003;          // 0.3% de margen cambiario USD -> PEN
+  // Modelo de ganancia FIJA: LC gana un monto fijo en USD por operación
+  // (no un porcentaje), sin importar cuántos USDT venda el cliente. Esto es
+  // a propósito mucho más agresivo que el spread porcentual de otros
+  // exchanges: entre más grande la operación, más conviene con LC.
+  var LC_PROFIT_USD = 1.00; // ganancia fija de LC por operación, en USD
+  // Monto mínimo de USDT para que la ganancia fija de $1 siga siendo
+  // razonable (con montos muy chicos, $1 sería una comisión altísima).
+  var MIN_USDT_AMOUNT = 50;
   // Spread de referencia de otros exchanges (compra/venta) para USDT/PEN,
   // usado SOLO para mostrar el bloque "vs otros exchanges" de forma
   // transparente. No se obtiene en vivo de ningún exchange en particular
@@ -566,23 +559,37 @@
     var marketUsd = state.usdtUsd;
     var marketFx = state.usdPen;
 
-    var buyRate = marketUsd * (1 - USDT_BUY_DISCOUNT_PCT);
-    var appliedFx = marketFx * (1 - FX_MARGIN_PCT);
-
+    // Modelo de ganancia FIJA: LC gana LC_PROFIT_USD por operación (no un
+    // porcentaje). La comisión de red es un costo real que se pasa al
+    // cliente, no es ganancia de LC.
     var refValueUsd = amount * marketUsd;
-    var discountUsd = refValueUsd * USDT_BUY_DISCOUNT_PCT;
     var feeUsd = network.feeUsdt * marketUsd;
-    var totalUsd = Math.max(0, refValueUsd - discountUsd - feeUsd);
+    var totalUsd = Math.max(0, refValueUsd - feeUsd - LC_PROFIT_USD);
 
-    var fxMarginPerUsd = marketFx * FX_MARGIN_PCT;
-    var refValuePen = totalUsd * marketFx;
+    // Tasa efectiva de compra (solo para mostrar): entre más grande la
+    // operación, más se acerca al precio de mercado (porque $1 fijo pesa
+    // menos proporcionalmente).
+    var buyRate = amount > 0 ? totalUsd / amount : 0;
+
+    // La conversión a soles se hace al tipo de cambio de mercado, sin
+    // margen adicional (toda la ganancia de LC ya se tomó en la etapa USD).
+    var appliedFx = marketFx;
     var totalPen = totalUsd * appliedFx;
+
+    var belowMinimum = amount > 0 && amount < MIN_USDT_AMOUNT;
+    var minAmountWarning = document.getElementById("lcx-min-amount-warning");
+    if (belowMinimum) {
+      minAmountWarning.style.display = "block";
+      minAmountWarning.textContent = "⚠️ El monto mínimo recomendado es " + MIN_USDT_AMOUNT + " USDT para que la ganancia fija de LC ($" + LC_PROFIT_USD.toFixed(2) + ") no sea una comisión demasiado alta sobre montos chicos.";
+    } else {
+      minAmountWarning.style.display = "none";
+    }
 
     // Panel 3
     document.getElementById("lcx-buy-rate").textContent = fmt(buyRate, 4) + " USD";
     document.getElementById("lcx-total-usd").textContent = fmt(totalUsd, 2) + " USD";
     document.getElementById("lcx-d-amount").textContent = fmt(amount, 2) + " USDT";
-    document.getElementById("lcx-d-discount").textContent = "-" + fmt(discountUsd, 2) + " USD (" + (USDT_BUY_DISCOUNT_PCT * 100).toFixed(2) + "%)";
+    document.getElementById("lcx-d-discount").textContent = "-" + fmt(LC_PROFIT_USD, 2) + " USD (fijo)";
     document.getElementById("lcx-d-market").textContent = fmt(marketUsd, 4) + " USD";
     document.getElementById("lcx-d-fee").textContent = fmt(network.feeUsdt, 2) + " USDT (" + network.id + ")";
     document.getElementById("lcx-d-ref").textContent = fmt(refValueUsd, 2) + " USD";
@@ -591,7 +598,6 @@
     document.getElementById("lcx-fx-rate").textContent = fmt(appliedFx, 4) + " PEN";
     document.getElementById("lcx-total-pen").textContent = "S/ " + fmt(totalPen, 2);
     document.getElementById("lcx-d-usd1").textContent = fmt(totalUsd, 2) + " USD";
-    document.getElementById("lcx-d-fxmargin").textContent = "-" + fmt(fxMarginPerUsd, 4) + " PEN (" + (FX_MARGIN_PCT * 100).toFixed(2) + "%)";
     document.getElementById("lcx-d-fxref").textContent = fmt(marketFx, 4) + " PEN";
     document.getElementById("lcx-d-total-pen").textContent = "S/ " + fmt(totalPen, 2);
 
@@ -631,25 +637,14 @@
       savingsEl.style.color = "var(--red)";
     }
 
-    // Panel 4: utilidad
-    var marginPerUsdt = marketUsd - buyRate;
-    var marginTotalUsd = amount * marginPerUsdt;
-    var marginTotalPen = totalUsd * fxMarginPerUsd;
-    var equivPen = marginTotalPen + (marginTotalUsd * appliedFx);
+    // Panel 4: utilidad (ganancia fija de LC)
+    var profitUsd = amount > 0 ? LC_PROFIT_USD : 0;
+    var profitPen = profitUsd * marketFx;
 
     document.getElementById("lcx-p-market").textContent = fmt(marketUsd, 4) + " USD";
     document.getElementById("lcx-p-buyrate").textContent = fmt(buyRate, 4) + " USD";
-    document.getElementById("lcx-p-margin-usdt").textContent = fmt(marginPerUsdt, 4) + " USD (" + (USDT_BUY_DISCOUNT_PCT * 100).toFixed(2) + "%)";
-    document.getElementById("lcx-p-margin-total-usd").textContent = fmt(marginTotalUsd, 2) + " USD";
-
-    document.getElementById("lcx-p-fxref").textContent = fmt(marketFx, 4) + " PEN";
-    document.getElementById("lcx-p-fxapplied").textContent = fmt(appliedFx, 4) + " PEN";
-    document.getElementById("lcx-p-margin-fx").textContent = fmt(fxMarginPerUsd, 4) + " PEN (" + (FX_MARGIN_PCT * 100).toFixed(2) + "%)";
-    document.getElementById("lcx-p-margin-total-pen").textContent = fmt(marginTotalPen, 2) + " PEN";
-
-    document.getElementById("lcx-p-total-usd").textContent = fmt(marginTotalUsd, 2) + " USD";
-    document.getElementById("lcx-p-total-pen").textContent = fmt(marginTotalPen, 2) + " PEN";
-    document.getElementById("lcx-p-total-equiv").textContent = "S/ " + fmt(equivPen, 2);
+    document.getElementById("lcx-p-profit-usd").textContent = fmt(profitUsd, 2) + " USD";
+    document.getElementById("lcx-p-profit-pen").textContent = "S/ " + fmt(profitPen, 2);
   }
 
   document.getElementById("lcx-calc-btn").addEventListener("click", calculate);
