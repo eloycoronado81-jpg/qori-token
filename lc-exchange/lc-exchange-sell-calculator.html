@@ -8,10 +8,12 @@
   - LC_MARGIN_BASE_PCT / LC_MARGIN_STANDARD_PCT / LC_MARGIN_FLOOR_USD: margen
     propio de LC en sus dos niveles (1.7% / 1.8%, piso $1).
   - NETWORK_FEES_USDT: comisión real por red (hoy son valores de ejemplo).
-  - RATE_API_URL: si despliegas lc-exchange-chat-backend, apunta aquí a su
-    endpoint /rate para evitar pegarle directo a CoinGecko desde el navegador
-    (mejor control de límites de uso). Si lo dejas vacío, usa CoinGecko
-    directamente (funciona igual, sin backend).
+  - RATE_API_URL: si despliegas el backend real (Laravel, endpoint
+    /api/crypto-rate), apunta aquí. Esto además ENLAZA el tipo de cambio a
+    soles con el que ya usas en Home ("Sigue el Tipo de Cambio online"): si
+    lo actualizas ahí, esta calculadora usa el valor nuevo automáticamente
+    (campo lcUsdPenRate). Si lo dejas vacío, usa CoinGecko directamente
+    (funciona igual, pero SIN ese enlace — usa el tipo de cambio de mercado).
   - WHATSAPP_URL / SUPPORT_EMAIL: tus datos reales de contacto.
 -->
 <!doctype html>
@@ -22,18 +24,18 @@
 <title>LC Exchange - Calculadora de venta</title>
 <style>
   :root {
-    --bg: #12182c;
-    --panel: #1a2340;
-    --panel-border: #2f3a5c;
-    --text: #edf0f7;
-    --muted: #9aa3bd;
-    --green: #34d399;
-    --green-dim: #1c3a34;
-    --purple: #b3a3f7;
-    --purple-dim: #2c2350;
-    --blue: #60a5fa;
-    --orange: #fbbf5c;
-    --red: #f87171;
+    --bg: #ffffff;
+    --panel: #f7f8fa;
+    --panel-border: #e1e4ea;
+    --text: #1a1f2b;
+    --muted: #6b7280;
+    --green: #1f9e52;
+    --green-dim: #e9f9ef;
+    --purple: #6d4fe0;
+    --purple-dim: #f2effc;
+    --blue: #2f5fe2;
+    --orange: #b45309;
+    --red: #d92d20;
   }
   * { box-sizing: border-box; }
   #lcx-calc {
@@ -44,6 +46,8 @@
     border-radius: 16px;
     max-width: 1200px;
     margin: 0 auto;
+    border: 1px solid var(--panel-border);
+    box-shadow: 0 2px 10px rgba(20,20,40,.05);
   }
   #lcx-calc a { color: inherit; }
 
@@ -103,24 +107,24 @@
 
   label { display:block; font-size: 12px; color: var(--muted); margin: 12px 0 6px; }
   select, input[type="number"] {
-    width: 100%; background: #0b1120; border: 1px solid var(--panel-border);
+    width: 100%; background: #f4f5f7; border: 1px solid var(--panel-border);
     color: var(--text); padding: 10px 12px; border-radius: 8px; font-size: 14px;
   }
   .lcx-quick { display:flex; gap:6px; margin-top:8px; flex-wrap: wrap; }
   .lcx-quick button {
-    flex: 1; min-width: 56px; background:#0b1120; border:1px solid var(--panel-border); color: var(--text);
+    flex: 1; min-width: 56px; background:#f4f5f7; border:1px solid var(--panel-border); color: var(--text);
     padding: 6px; border-radius: 8px; cursor:pointer; font-size:12px;
   }
   .lcx-quick button.lcx-active, .lcx-quick button:hover { border-color: var(--green); color: var(--green); }
 
   .lcx-toggle { display:flex; gap:8px; margin-top:8px; }
   .lcx-toggle button {
-    flex:1; background:#0b1120; border:1px solid var(--panel-border); color: var(--text);
+    flex:1; background:#f4f5f7; border:1px solid var(--panel-border); color: var(--text);
     padding: 12px; border-radius: 10px; cursor:pointer; font-size:13px; text-align:left;
   }
   .lcx-toggle button.lcx-active { border-color: var(--green); background: var(--green-dim); color: var(--green); }
   .lcx-toggle small { display:block; color: var(--muted); font-weight:400; }
-  .lcx-toggle button.lcx-active small { color: #7ddba0; }
+  .lcx-toggle button.lcx-active small { color: #15803d; }
 
   .lcx-calc-btn {
     width: 100%; margin-top: 16px; background: var(--green); color: #04140a;
@@ -130,8 +134,8 @@
 
   .lcx-result-box { border: 1px solid var(--panel-border); border-radius: 12px; margin-bottom: 12px; overflow: hidden; }
   .lcx-result-box.lcx-highlight { border-color: var(--green); }
-  .lcx-result-head { padding: 8px 14px; font-size: 12px; font-weight: 700; background: #101c33; }
-  .lcx-result-head.lcx-pen { background: #1c1533; }
+  .lcx-result-head { padding: 8px 14px; font-size: 12px; font-weight: 700; background: #eef2ff; }
+  .lcx-result-head.lcx-pen { background: #f5f0ff; }
   .lcx-result-body { padding: 12px 14px; }
   .lcx-result-row { display:flex; justify-content:space-between; align-items:baseline; margin-bottom: 4px; }
   .lcx-result-big { font-size: 20px; font-weight: 800; }
@@ -142,9 +146,9 @@
   .lcx-detail-row.lcx-total span:last-child { color: var(--green); font-weight: 700; }
   .lcx-detail-row.lcx-neg span:last-child { color: var(--red); }
 
-  .lcx-tip { background: var(--green-dim); border: 1px solid #1f4a2c; border-radius: 10px; padding: 10px 12px; font-size: 12px; color: #a7e9bc; }
+  .lcx-tip { background: var(--green-dim); border: 1px solid #b7e4c7; border-radius: 10px; padding: 10px 12px; font-size: 12px; color: #15803d; }
 
-  .lcx-vs-market { margin-top: 12px; background: #0b1120; border: 1px solid var(--green); border-radius: 10px; padding: 12px 14px; }
+  .lcx-vs-market { margin-top: 12px; background: #f7fdf9; border: 1px solid var(--green); border-radius: 10px; padding: 12px 14px; }
   .lcx-vs-market-head { font-size: 13px; font-weight: 700; color: var(--green); margin-bottom: 8px; }
   .lcx-vs-market-row { display:flex; justify-content:space-between; font-size: 12px; padding: 3px 0; color: var(--muted); }
   .lcx-vs-market-row span:last-child { color: var(--text); font-weight: 600; }
@@ -154,22 +158,22 @@
 
   .lcx-deposit-panel { margin-top: 16px; }
   .lcx-deposit-intro { font-size: 13px; color: var(--muted); margin: 0 0 12px; }
-  .lcx-deposit-msg { font-size: 13px; background: #0b1120; border: 1px solid var(--panel-border); border-radius: 10px; padding: 12px 14px; color: var(--muted); }
+  .lcx-deposit-msg { font-size: 13px; background: #f4f5f7; border: 1px solid var(--panel-border); border-radius: 10px; padding: 12px 14px; color: var(--muted); }
   .lcx-deposit-result { margin-top: 16px; }
   .lcx-deposit-grid { display: grid; grid-template-columns: 180px 1fr; gap: 20px; align-items: start; }
   @media (max-width: 640px) { .lcx-deposit-grid { grid-template-columns: 1fr; justify-items: center; text-align: center; } }
-  .lcx-deposit-qr-img { width: 180px; height: 180px; background: #fff; border-radius: 10px; padding: 8px; }
-  .lcx-deposit-address { font-family: ui-monospace, "SFMono-Regular", Menlo, monospace; font-size: 13px; word-break: break-all; background: #0b1120; border: 1px solid var(--panel-border); border-radius: 8px; padding: 8px 10px; margin-top: 4px; }
-  .lcx-copy-btn { margin-top: 8px; background: #0b1120; border: 1px solid var(--panel-border); color: var(--text); padding: 6px 12px; border-radius: 8px; cursor: pointer; font-size: 12px; }
+  .lcx-deposit-qr-img { width: 180px; height: 180px; background: #fff; border-radius: 10px; padding: 8px; border: 1px solid var(--panel-border); }
+  .lcx-deposit-address { font-family: ui-monospace, "SFMono-Regular", Menlo, monospace; font-size: 13px; word-break: break-all; background: #f4f5f7; border: 1px solid var(--panel-border); border-radius: 8px; padding: 8px 10px; margin-top: 4px; }
+  .lcx-copy-btn { margin-top: 8px; background: #f4f5f7; border: 1px solid var(--panel-border); color: var(--text); padding: 6px 12px; border-radius: 8px; cursor: pointer; font-size: 12px; }
   .lcx-copy-btn:hover { border-color: var(--green); color: var(--green); }
   .lcx-deposit-timer { margin-top: 12px; font-size: 14px; font-weight: 700; }
   .lcx-deposit-status { margin-top: 12px; font-size: 13px; padding: 10px 12px; border-radius: 8px; }
-  .lcx-deposit-status.lcx-status-pending { background: #1c2340; color: var(--muted); }
-  .lcx-deposit-status.lcx-status-confirmed { background: var(--green-dim); color: #9ff0c4; }
-  .lcx-deposit-status.lcx-status-expired { background: #3a1f1f; color: #ffb4b4; }
+  .lcx-deposit-status.lcx-status-pending { background: #f0f1f4; color: var(--muted); }
+  .lcx-deposit-status.lcx-status-confirmed { background: var(--green-dim); color: #15803d; }
+  .lcx-deposit-status.lcx-status-expired { background: #fdecec; color: #b42318; }
 
   .lcx-eye { background:none; border:none; color: var(--muted); cursor:pointer; font-size: 14px; }
-  .lcx-profit-card { background: #0b1120; border: 1px solid var(--panel-border); border-radius: 10px; padding: 12px; margin-bottom: 10px; }
+  .lcx-profit-card { background: #f7f8fa; border: 1px solid var(--panel-border); border-radius: 10px; padding: 12px; margin-bottom: 10px; }
   .lcx-profit-card h4 { font-size: 12px; margin: 0 0 8px; color: var(--muted); display:flex; align-items:center; gap:6px; }
   .lcx-profit-row { display:flex; justify-content:space-between; font-size: 12px; padding: 3px 0; color: var(--muted); }
   .lcx-profit-row span:last-child { color: var(--text); }
@@ -178,7 +182,7 @@
   .lcx-profit-total-usd { color: var(--green); }
   .lcx-profit-total-pen { color: var(--purple); }
   .lcx-profit-final { text-align:center; padding-top: 8px; }
-  .lcx-profit-final .lcx-value { font-size: 22px; font-weight: 800; color: #facc15; }
+  .lcx-profit-final .lcx-value { font-size: 22px; font-weight: 800; color: #b45309; }
   .lcx-hidden-blur { filter: blur(6px); user-select: none; pointer-events: none; }
 
   .lcx-footer { margin-top: 20px; display:grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
@@ -192,8 +196,8 @@
   .lcx-wa-btn { display:block; text-align:center; background: var(--green); color:#04140a; text-decoration:none; padding:10px; border-radius:8px; font-weight:700; font-size:13px; margin-top:8px; }
   .lcx-support-email { display:block; text-align:center; font-size:12px; color: var(--muted); margin-top:8px; }
 
-  .lcx-warning { background: #3a1f1f; border: 1px solid #6b2c2c; color: #ffb4b4; font-size:12px; padding:8px 12px; border-radius:8px; margin-bottom: 16px; display:none; }
-  .lcx-min-amount-warning { background: #3a2f1f; border: 1px solid #6b512c; color: #ffcf9a; font-size:12px; padding:8px 10px; border-radius:8px; margin-top: 8px; }
+  .lcx-warning { background: #fdecec; border: 1px solid #f5b5b5; color: #b42318; font-size:12px; padding:8px 12px; border-radius:8px; margin-bottom: 16px; display:none; }
+  .lcx-min-amount-warning { background: #fff4e5; border: 1px solid #f3c98b; color: #92400e; font-size:12px; padding:8px 10px; border-radius:8px; margin-top: 8px; }
   .lcx-profit-flat-note { font-size: 11px; color: var(--muted); margin: 0 0 10px; line-height: 1.4; }
   .lcx-warning.lcx-show { display:block; }
 </style>
@@ -525,9 +529,13 @@
       .then(function (data) {
         var usdtUsd, usdPen;
         if (RATE_API_URL) {
-          // Se asume que el backend responde { usdtUsd, usdPen }
+          // Se asume que el backend responde { usdtUsd, usdPen, lcUsdPenRate }.
+          // lcUsdPenRate es el mismo tipo de cambio de compra que ya se
+          // muestra en Home ("Sigue el Tipo de Cambio online"): si se
+          // actualiza ahí, esta calculadora usa el valor nuevo. Si el
+          // backend todavía no lo envía, se usa usdPen como respaldo.
           usdtUsd = data.usdtUsd;
-          usdPen = data.usdPen;
+          usdPen = data.lcUsdPenRate || data.usdPen;
         } else {
           usdtUsd = data.tether && data.tether.usd;
           usdPen = data.tether && data.tether.pen && data.tether.usd ? data.tether.pen / data.tether.usd : null;
