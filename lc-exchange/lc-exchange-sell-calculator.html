@@ -4,8 +4,8 @@
   página nueva o dentro de un <iframe>). No depende del stack del sitio.
 
   ANTES DE PUBLICAR, revisa/ajusta en el bloque <script> más abajo:
-  - LC_PROFIT_USD: ganancia FIJA en USD por operación (no un porcentaje).
-  - MIN_USDT_AMOUNT: monto mínimo para que esa ganancia fija sea razonable.
+  - OTHER_EXCHANGES_SPREAD_PCT: referencia del margen de otros exchanges.
+  - LC_MARGIN_VS_OTHER_RATIO: qué fracción de ese margen gana LC (0.5 = mitad).
   - NETWORK_FEES_USDT: comisión real por red (hoy son valores de ejemplo).
   - RATE_API_URL: si despliegas lc-exchange-chat-backend, apunta aquí a su
     endpoint /rate para evitar pegarle directo a CoinGecko desde el navegador
@@ -277,7 +277,7 @@
           </div>
           <div class="lcx-detail-grid">
             <div class="lcx-detail-row"><span>Cantidad de USDT</span><span id="lcx-d-amount">—</span></div>
-            <div class="lcx-detail-row"><span>Ganancia de LC (fija)</span><span id="lcx-d-discount" class="lcx-neg">—</span></div>
+            <div class="lcx-detail-row"><span>Ganancia de LC</span><span id="lcx-d-discount" class="lcx-neg">—</span></div>
             <div class="lcx-detail-row"><span>Precio de mercado</span><span id="lcx-d-market">—</span></div>
             <div class="lcx-detail-row"><span>Comisión de red</span><span id="lcx-d-fee">—</span></div>
             <div class="lcx-detail-row"><span>Valor de referencia</span><span id="lcx-d-ref">—</span></div>
@@ -328,16 +328,18 @@
 
       <div id="lcx-profit-content">
         <div class="lcx-profit-card">
-          <h4>💰 Ganancia fija de LC Exchange</h4>
+          <h4>💰 Ganancia de LC vs. un exchange típico</h4>
           <p class="lcx-profit-flat-note">
-            Ganamos siempre lo mismo por operación, sin importar el monto — no un
-            porcentaje. Así, entre más grande la venta, mejor tasa efectiva recibe
-            el cliente (comparado con un margen porcentual como el de otros exchanges).
+            LC gana la mitad (configurable) del margen de referencia de otros
+            exchanges en esta operación — "parecido, pero no igual": ganamos
+            menos que la competencia (para ser más baratos), pero el margen
+            sigue escalando con el monto, como cualquier negocio real.
           </p>
           <div class="lcx-profit-row"><span>Precio de mercado (USDT)</span><span id="lcx-p-market">—</span></div>
           <div class="lcx-profit-row"><span>Tasa efectiva de compra</span><span id="lcx-p-buyrate">—</span></div>
-          <div class="lcx-profit-row lcx-total"><span>Ganancia de LC (fija)</span><span class="lcx-profit-total-usd" id="lcx-p-profit-usd">—</span></div>
+          <div class="lcx-profit-row lcx-total"><span>Ganancia de LC</span><span class="lcx-profit-total-usd" id="lcx-p-profit-usd">—</span></div>
           <div class="lcx-profit-row"><span>Equivalente en soles</span><span id="lcx-p-profit-pen">—</span></div>
+          <div class="lcx-profit-row"><span>Ganaría un exchange típico (referencial)</span><span id="lcx-p-other-profit-usd">—</span></div>
         </div>
       </div>
     </div>
@@ -402,22 +404,25 @@
 <script>
 (function () {
   // ====== CONFIGURACIÓN DEL NEGOCIO (ajustar antes de publicar) ======
-  // Modelo de ganancia FIJA: LC gana un monto fijo en USD por operación
-  // (no un porcentaje), sin importar cuántos USDT venda el cliente. Esto es
-  // a propósito mucho más agresivo que el spread porcentual de otros
-  // exchanges: entre más grande la operación, más conviene con LC.
-  var LC_PROFIT_USD = 1.00; // ganancia fija de LC por operación, en USD
-  // Monto mínimo de USDT para que la ganancia fija de $1 siga siendo
-  // razonable (con montos muy chicos, $1 sería una comisión altísima).
-  var MIN_USDT_AMOUNT = 50;
   // Spread de referencia de otros exchanges (compra/venta) para USDT/PEN,
-  // usado SOLO para mostrar el bloque "vs otros exchanges" de forma
-  // transparente. No se obtiene en vivo de ningún exchange en particular
-  // (sus APIs de P2P no son aptas para consultarse desde el navegador de
-  // cada visitante) — actualízalo manualmente cada cierto tiempo revisando
-  // precios reales de la competencia, para no mostrar una comparación
-  // desactualizada o engañosa.
+  // usado para el bloque "vs otros exchanges" Y para calibrar el margen de
+  // LC en base a él. En Perú, los off-ramps con tarjeta suelen cobrar 2%-5%
+  // de margen y el P2P varía bastante según el método de pago — 2% es una
+  // referencia razonable (más bien conservadora), no un dato en vivo de
+  // ningún exchange en particular (sus APIs de P2P no son aptas para
+  // consultarse desde el navegador de cada visitante). Actualízalo cada
+  // cierto tiempo revisando precios reales de la competencia.
   var OTHER_EXCHANGES_SPREAD_PCT = 0.02; // 2% de ejemplo — TODO: verificar y actualizar periódicamente
+  // Margen de LC como fracción del margen de referencia de otros exchanges.
+  // 0.5 = LC gana la mitad de lo que ganaría un exchange típico en la misma
+  // operación: "gana parecido, pero no igual" — no un monto fijo. Así la
+  // ganancia de LC escala con el monto igual que la de la competencia, en
+  // vez de quedarse en un número arbitrario que no crece con la operación.
+  var LC_MARGIN_VS_OTHER_RATIO = 0.5;
+  var LC_MARGIN_PCT = OTHER_EXCHANGES_SPREAD_PCT * LC_MARGIN_VS_OTHER_RATIO; // 1% con los valores de arriba
+  // Monto mínimo recomendado: con montos muy chicos, la comisión de red
+  // (fija en USDT, no en %) puede ser una porción desproporcionada del total.
+  var MIN_USDT_AMOUNT = 50;
   var NETWORKS = [
     { id: "TRC20", label: "USDT · Tether (TRC20)", short: "TRC20 (Tron)", feeUsdt: 0,   feeLabel: "Baja comisión", low: true },
     { id: "ERC20", label: "USDT · Tether (ERC20)", short: "ERC20 (Ethereum)", feeUsdt: 8, feeLabel: "Mayor comisión", low: false }, // TODO: ajustar a costo real de gas
@@ -559,16 +564,15 @@
     var marketUsd = state.usdtUsd;
     var marketFx = state.usdPen;
 
-    // Modelo de ganancia FIJA: LC gana LC_PROFIT_USD por operación (no un
-    // porcentaje). La comisión de red es un costo real que se pasa al
+    // Modelo de margen: LC gana LC_MARGIN_PCT del valor de la operación
+    // (la mitad del spread de referencia de otros exchanges — "similar,
+    // pero no igual"). La comisión de red es un costo real que se pasa al
     // cliente, no es ganancia de LC.
     var refValueUsd = amount * marketUsd;
     var feeUsd = network.feeUsdt * marketUsd;
-    var totalUsd = Math.max(0, refValueUsd - feeUsd - LC_PROFIT_USD);
+    var profitUsd = refValueUsd * LC_MARGIN_PCT;
+    var totalUsd = Math.max(0, refValueUsd - feeUsd - profitUsd);
 
-    // Tasa efectiva de compra (solo para mostrar): entre más grande la
-    // operación, más se acerca al precio de mercado (porque $1 fijo pesa
-    // menos proporcionalmente).
     var buyRate = amount > 0 ? totalUsd / amount : 0;
 
     // La conversión a soles se hace al tipo de cambio de mercado, sin
@@ -580,7 +584,7 @@
     var minAmountWarning = document.getElementById("lcx-min-amount-warning");
     if (belowMinimum) {
       minAmountWarning.style.display = "block";
-      minAmountWarning.textContent = "⚠️ El monto mínimo recomendado es " + MIN_USDT_AMOUNT + " USDT para que la ganancia fija de LC ($" + LC_PROFIT_USD.toFixed(2) + ") no sea una comisión demasiado alta sobre montos chicos.";
+      minAmountWarning.textContent = "⚠️ El monto mínimo recomendado es " + MIN_USDT_AMOUNT + " USDT para que la comisión de red (fija en USDT) no sea una porción demasiado alta sobre montos chicos.";
     } else {
       minAmountWarning.style.display = "none";
     }
@@ -589,7 +593,7 @@
     document.getElementById("lcx-buy-rate").textContent = fmt(buyRate, 4) + " USD";
     document.getElementById("lcx-total-usd").textContent = fmt(totalUsd, 2) + " USD";
     document.getElementById("lcx-d-amount").textContent = fmt(amount, 2) + " USDT";
-    document.getElementById("lcx-d-discount").textContent = "-" + fmt(LC_PROFIT_USD, 2) + " USD (fijo)";
+    document.getElementById("lcx-d-discount").textContent = "-" + fmt(profitUsd, 2) + " USD (" + (LC_MARGIN_PCT * 100).toFixed(2) + "%)";
     document.getElementById("lcx-d-market").textContent = fmt(marketUsd, 4) + " USD";
     document.getElementById("lcx-d-fee").textContent = fmt(network.feeUsdt, 2) + " USDT (" + network.id + ")";
     document.getElementById("lcx-d-ref").textContent = fmt(refValueUsd, 2) + " USD";
@@ -637,14 +641,16 @@
       savingsEl.style.color = "var(--red)";
     }
 
-    // Panel 4: utilidad (ganancia fija de LC)
-    var profitUsd = amount > 0 ? LC_PROFIT_USD : 0;
+    // Panel 4: utilidad de LC, comparada con lo que ganaría un exchange
+    // típico en la misma operación (ver OTHER_EXCHANGES_SPREAD_PCT).
     var profitPen = profitUsd * marketFx;
+    var otherExchangeProfitUsd = refValueUsd * OTHER_EXCHANGES_SPREAD_PCT;
 
     document.getElementById("lcx-p-market").textContent = fmt(marketUsd, 4) + " USD";
     document.getElementById("lcx-p-buyrate").textContent = fmt(buyRate, 4) + " USD";
-    document.getElementById("lcx-p-profit-usd").textContent = fmt(profitUsd, 2) + " USD";
+    document.getElementById("lcx-p-profit-usd").textContent = fmt(profitUsd, 2) + " USD (" + (LC_MARGIN_PCT * 100).toFixed(2) + "%)";
     document.getElementById("lcx-p-profit-pen").textContent = "S/ " + fmt(profitPen, 2);
+    document.getElementById("lcx-p-other-profit-usd").textContent = fmt(otherExchangeProfitUsd, 2) + " USD (" + (OTHER_EXCHANGES_SPREAD_PCT * 100).toFixed(2) + "%)";
   }
 
   document.getElementById("lcx-calc-btn").addEventListener("click", calculate);
