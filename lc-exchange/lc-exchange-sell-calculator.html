@@ -142,13 +142,13 @@
 
   .lcx-tip { background: var(--green-dim); border: 1px solid #1f4a2c; border-radius: 10px; padding: 10px 12px; font-size: 12px; color: #a7e9bc; }
 
-  .lcx-vs-binance { margin-top: 12px; background: #0b1120; border: 1px solid var(--green); border-radius: 10px; padding: 12px 14px; }
-  .lcx-vs-binance-head { font-size: 13px; font-weight: 700; color: var(--green); margin-bottom: 8px; }
-  .lcx-vs-binance-row { display:flex; justify-content:space-between; font-size: 12px; padding: 3px 0; color: var(--muted); }
-  .lcx-vs-binance-row span:last-child { color: var(--text); font-weight: 600; }
-  .lcx-vs-binance-row.lcx-vs-savings { border-top: 1px dashed var(--panel-border); margin-top: 4px; padding-top: 8px; }
-  .lcx-vs-binance-row.lcx-vs-savings span:last-child { color: var(--green); font-size: 14px; font-weight: 800; }
-  .lcx-vs-binance-note { font-size: 10px; color: var(--muted); margin-top: 8px; }
+  .lcx-vs-market { margin-top: 12px; background: #0b1120; border: 1px solid var(--green); border-radius: 10px; padding: 12px 14px; }
+  .lcx-vs-market-head { font-size: 13px; font-weight: 700; color: var(--green); margin-bottom: 8px; }
+  .lcx-vs-market-row { display:flex; justify-content:space-between; font-size: 12px; padding: 3px 0; color: var(--muted); }
+  .lcx-vs-market-row span:last-child { color: var(--text); font-weight: 600; }
+  .lcx-vs-market-row.lcx-vs-savings { border-top: 1px dashed var(--panel-border); margin-top: 4px; padding-top: 8px; }
+  .lcx-vs-market-row.lcx-vs-savings span:last-child { color: var(--green); font-size: 14px; font-weight: 800; }
+  .lcx-vs-market-note { font-size: 10px; color: var(--muted); margin-top: 8px; }
 
   .lcx-deposit-panel { margin-top: 16px; }
   .lcx-deposit-intro { font-size: 13px; color: var(--muted); margin: 0 0 12px; }
@@ -282,12 +282,12 @@
         </div>
       </div>
 
-      <div class="lcx-vs-binance" id="lcx-vs-binance-usd">
-        <div class="lcx-vs-binance-head">💚 Más barato que Binance P2P (USD)</div>
-        <div class="lcx-vs-binance-row"><span>Con LC Exchange recibes</span><span id="lcx-vs-lc-usd">—</span></div>
-        <div class="lcx-vs-binance-row"><span>En Binance P2P recibirías (referencial)</span><span id="lcx-vs-binance-amt-usd">—</span></div>
-        <div class="lcx-vs-binance-row lcx-vs-savings"><span>Ahorras con LC Exchange</span><span id="lcx-vs-savings-usd">—</span></div>
-        <div class="lcx-vs-binance-note">*Comparación referencial. Verifica siempre las tasas vigentes en Binance P2P al momento de operar.</div>
+      <div class="lcx-vs-market" id="lcx-vs-market-usd">
+        <div class="lcx-vs-market-head">💚 Más barato que otros exchanges (USD)</div>
+        <div class="lcx-vs-market-row"><span>Con LC Exchange recibes</span><span id="lcx-vs-lc-usd">—</span></div>
+        <div class="lcx-vs-market-row"><span>En otros exchanges recibirías (referencial)</span><span id="lcx-vs-market-amt-usd">—</span></div>
+        <div class="lcx-vs-market-row lcx-vs-savings"><span>Ahorras con LC Exchange</span><span id="lcx-vs-savings-usd">—</span></div>
+        <div class="lcx-vs-market-note">*Comparación referencial. Verifica siempre las tasas vigentes en otros exchanges al momento de operar.</div>
       </div>
 
       <div class="lcx-result-box" id="lcx-box-pen">
@@ -311,12 +311,12 @@
 
       <div class="lcx-tip">💡 El cliente recibe soles al instante. Tú conviertes los USD a PEN con tu tipo de cambio.</div>
 
-      <div class="lcx-vs-binance" id="lcx-vs-binance">
-        <div class="lcx-vs-binance-head">💚 Más barato que Binance P2P (PEN)</div>
-        <div class="lcx-vs-binance-row"><span>Con LC Exchange recibes</span><span id="lcx-vs-lc">—</span></div>
-        <div class="lcx-vs-binance-row"><span>En Binance P2P recibirías (referencial)</span><span id="lcx-vs-binance-amt">—</span></div>
-        <div class="lcx-vs-binance-row lcx-vs-savings"><span>Ahorras con LC Exchange</span><span id="lcx-vs-savings">—</span></div>
-        <div class="lcx-vs-binance-note">*Comparación referencial. Verifica siempre las tasas vigentes en Binance P2P al momento de operar.</div>
+      <div class="lcx-vs-market" id="lcx-vs-market">
+        <div class="lcx-vs-market-head">💚 Más barato que otros exchanges (PEN)</div>
+        <div class="lcx-vs-market-row"><span>Con LC Exchange recibes</span><span id="lcx-vs-lc">—</span></div>
+        <div class="lcx-vs-market-row"><span>En otros exchanges recibirías (referencial)</span><span id="lcx-vs-market-amt">—</span></div>
+        <div class="lcx-vs-market-row lcx-vs-savings"><span>Ahorras con LC Exchange</span><span id="lcx-vs-savings">—</span></div>
+        <div class="lcx-vs-market-note">*Comparación referencial. Verifica siempre las tasas vigentes en otros exchanges al momento de operar.</div>
       </div>
     </div>
 
@@ -413,17 +413,18 @@
 (function () {
   // ====== CONFIGURACIÓN DEL NEGOCIO (ajustar antes de publicar) ======
   // Márgenes bajados a propósito para quedar por debajo del spread típico
-  // que se ve en Binance P2P para USDT/PEN (revisa BINANCE_REFERENCE_SPREAD_PCT
+  // que se suele ver en otros exchanges para USDT/PEN (revisa OTHER_EXCHANGES_SPREAD_PCT
   // más abajo). Ajusta ambos según lo que tu operación realmente pueda sostener.
   var USDT_BUY_DISCOUNT_PCT = 0.004;  // 0.4% de descuento al comprar USDT (tu margen)
   var FX_MARGIN_PCT = 0.003;          // 0.3% de margen cambiario USD -> PEN
-  // Spread de referencia de Binance P2P (compra/venta) para USDT/PEN, usado
-  // SOLO para mostrar el bloque "vs Binance" de forma transparente. No se
-  // obtiene en vivo de Binance (su API P2P no es apta para consultarse desde
-  // el navegador de cada visitante) — actualízalo manualmente cada cierto
-  // tiempo revisando anuncios reales en Binance P2P, para no mostrar una
-  // comparación desactualizada o engañosa.
-  var BINANCE_REFERENCE_SPREAD_PCT = 0.02; // 2% de ejemplo — TODO: verificar y actualizar periódicamente
+  // Spread de referencia de otros exchanges (compra/venta) para USDT/PEN,
+  // usado SOLO para mostrar el bloque "vs otros exchanges" de forma
+  // transparente. No se obtiene en vivo de ningún exchange en particular
+  // (sus APIs de P2P no son aptas para consultarse desde el navegador de
+  // cada visitante) — actualízalo manualmente cada cierto tiempo revisando
+  // precios reales de la competencia, para no mostrar una comparación
+  // desactualizada o engañosa.
+  var OTHER_EXCHANGES_SPREAD_PCT = 0.02; // 2% de ejemplo — TODO: verificar y actualizar periódicamente
   var NETWORKS = [
     { id: "TRC20", label: "USDT · Tether (TRC20)", short: "TRC20 (Tron)", feeUsdt: 0,   feeLabel: "Baja comisión", low: true },
     { id: "ERC20", label: "USDT · Tether (ERC20)", short: "ERC20 (Ethereum)", feeUsdt: 8, feeLabel: "Mayor comisión", low: false }, // TODO: ajustar a costo real de gas
@@ -597,13 +598,13 @@
     document.getElementById("lcx-box-usd").classList.toggle("lcx-highlight", selectedCurrency === "usd");
     document.getElementById("lcx-box-pen").classList.toggle("lcx-highlight", selectedCurrency === "pen");
 
-    // Comparación "vs Binance P2P" en USD (referencial, ver BINANCE_REFERENCE_SPREAD_PCT)
-    var binanceTotalUsd = refValueUsd * (1 - BINANCE_REFERENCE_SPREAD_PCT);
-    var savingsUsd = totalUsd - binanceTotalUsd;
-    var savingsPctUsd = binanceTotalUsd > 0 ? (totalUsd / binanceTotalUsd - 1) * 100 : 0;
+    // Comparación "vs otros exchanges" en USD (referencial, ver OTHER_EXCHANGES_SPREAD_PCT)
+    var otherExchangeTotalUsd = refValueUsd * (1 - OTHER_EXCHANGES_SPREAD_PCT);
+    var savingsUsd = totalUsd - otherExchangeTotalUsd;
+    var savingsPctUsd = otherExchangeTotalUsd > 0 ? (totalUsd / otherExchangeTotalUsd - 1) * 100 : 0;
 
     document.getElementById("lcx-vs-lc-usd").textContent = fmt(totalUsd, 2) + " USD";
-    document.getElementById("lcx-vs-binance-amt-usd").textContent = fmt(binanceTotalUsd, 2) + " USD";
+    document.getElementById("lcx-vs-market-amt-usd").textContent = fmt(otherExchangeTotalUsd, 2) + " USD";
     var savingsUsdEl = document.getElementById("lcx-vs-savings-usd");
     if (savingsUsd >= 0) {
       savingsUsdEl.textContent = "+" + fmt(savingsUsd, 2) + " USD (" + savingsPctUsd.toFixed(2) + "% más)";
@@ -613,14 +614,14 @@
       savingsUsdEl.style.color = "var(--red)";
     }
 
-    // Comparación "vs Binance P2P" en PEN (referencial, ver BINANCE_REFERENCE_SPREAD_PCT)
+    // Comparación "vs otros exchanges" en PEN (referencial, ver OTHER_EXCHANGES_SPREAD_PCT)
     var refValuePenRaw = amount * marketUsd * marketFx;
-    var binanceTotalPen = refValuePenRaw * (1 - BINANCE_REFERENCE_SPREAD_PCT);
-    var savingsPen = totalPen - binanceTotalPen;
-    var savingsPct = binanceTotalPen > 0 ? (totalPen / binanceTotalPen - 1) * 100 : 0;
+    var otherExchangeTotalPen = refValuePenRaw * (1 - OTHER_EXCHANGES_SPREAD_PCT);
+    var savingsPen = totalPen - otherExchangeTotalPen;
+    var savingsPct = otherExchangeTotalPen > 0 ? (totalPen / otherExchangeTotalPen - 1) * 100 : 0;
 
     document.getElementById("lcx-vs-lc").textContent = "S/ " + fmt(totalPen, 2);
-    document.getElementById("lcx-vs-binance-amt").textContent = "S/ " + fmt(binanceTotalPen, 2);
+    document.getElementById("lcx-vs-market-amt").textContent = "S/ " + fmt(otherExchangeTotalPen, 2);
     var savingsEl = document.getElementById("lcx-vs-savings");
     if (savingsPen >= 0) {
       savingsEl.textContent = "+S/ " + fmt(savingsPen, 2) + " (" + savingsPct.toFixed(2) + "% más)";
