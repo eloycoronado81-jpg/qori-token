@@ -1,0 +1,551 @@
+<!--
+  LC Exchange - Calculadora de venta (USDT -> USD / PEN)
+  Widget autónomo para pegar en https://lc-exchange.com/ (bloque HTML,
+  página nueva o dentro de un <iframe>). No depende del stack del sitio.
+
+  ANTES DE PUBLICAR, revisa/ajusta en el bloque <script> más abajo:
+  - USDT_BUY_DISCOUNT_PCT y FX_MARGIN_PCT: tus márgenes reales de compra.
+  - NETWORK_FEES_USDT: comisión real por red (hoy son valores de ejemplo).
+  - RATE_API_URL: si despliegas lc-exchange-chat-backend, apunta aquí a su
+    endpoint /rate para evitar pegarle directo a CoinGecko desde el navegador
+    (mejor control de límites de uso). Si lo dejas vacío, usa CoinGecko
+    directamente (funciona igual, sin backend).
+  - WHATSAPP_URL / SUPPORT_EMAIL: tus datos reales de contacto.
+-->
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>LC Exchange - Calculadora de venta</title>
+<style>
+  :root {
+    --bg: #070b14;
+    --panel: #0f1526;
+    --panel-border: #1c2740;
+    --text: #e7eaf2;
+    --muted: #8a93ab;
+    --green: #22c55e;
+    --green-dim: #16321f;
+    --purple: #a78bfa;
+    --purple-dim: #241b3d;
+    --blue: #3b82f6;
+    --orange: #f59e0b;
+    --red: #ef4444;
+  }
+  * { box-sizing: border-box; }
+  #lcx-calc {
+    font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 20px;
+    border-radius: 16px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  #lcx-calc a { color: inherit; }
+
+  .lcx-header {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 0.7fr;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .lcx-brand { display: flex; align-items: center; gap: 12px; }
+  .lcx-logo {
+    width: 44px; height: 44px; border-radius: 10px;
+    background: var(--green); color: #04140a;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 16px;
+    flex-shrink: 0;
+  }
+  .lcx-brand-title { font-size: 22px; font-weight: 800; letter-spacing: .3px; }
+  .lcx-brand-sub { font-size: 12px; color: var(--muted); }
+  .lcx-calc-title { font-size: 20px; font-weight: 800; margin: 0; }
+  .lcx-calc-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+  .lcx-box {
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 12px;
+    padding: 12px 14px;
+  }
+  .lcx-market-label { font-size: 11px; color: var(--muted); }
+  .lcx-market-value { font-size: 15px; font-weight: 700; margin-top: 2px; }
+  .lcx-market-pen { color: var(--purple); }
+  .lcx-live-dot { display:inline-block; width:7px; height:7px; border-radius:999px; background:var(--green); margin-right:5px; }
+  .lcx-refresh { background:none; border:1px solid var(--panel-border); color: var(--text); border-radius:8px; padding:4px 8px; cursor:pointer; font-size:12px; float:right; }
+  .lcx-refresh:hover { border-color: var(--green); }
+  .lcx-refresh.lcx-spin { animation: lcx-spin 0.8s linear; }
+  @keyframes lcx-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+  .lcx-steps {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--panel); border: 1px solid var(--panel-border);
+    border-radius: 12px; padding: 14px 16px; margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  .lcx-step { display: flex; align-items: center; gap: 10px; font-size: 13px; }
+  .lcx-step-num { width: 24px; height: 24px; border-radius: 999px; background: var(--green); color:#04140a; font-weight:800; font-size:12px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .lcx-step-arrow { color: var(--muted); }
+  .lcx-steps-note { margin-left: auto; font-size: 12px; color: var(--green); font-weight: 600; }
+  .lcx-steps-note small { display:block; color: var(--muted); font-weight: 400; }
+
+  .lcx-grid { display: grid; grid-template-columns: 1fr 1.3fr 1fr; gap: 16px; align-items: start; }
+  @media (max-width: 980px) { .lcx-grid { grid-template-columns: 1fr; } .lcx-header { grid-template-columns: 1fr; } }
+
+  .lcx-panel { background: var(--panel); border: 1px solid var(--panel-border); border-radius: 12px; padding: 16px; }
+  .lcx-panel h3 { font-size: 13px; margin: 0 0 14px; color: var(--muted); letter-spacing: .3px; display:flex; align-items:center; justify-content:space-between; }
+  .lcx-panel h3 .lcx-num-green { color: var(--green); }
+  .lcx-panel h3 .lcx-num-blue { color: var(--blue); }
+
+  label { display:block; font-size: 12px; color: var(--muted); margin: 12px 0 6px; }
+  select, input[type="number"] {
+    width: 100%; background: #0b1120; border: 1px solid var(--panel-border);
+    color: var(--text); padding: 10px 12px; border-radius: 8px; font-size: 14px;
+  }
+  .lcx-quick { display:flex; gap:6px; margin-top:8px; flex-wrap: wrap; }
+  .lcx-quick button {
+    flex: 1; min-width: 56px; background:#0b1120; border:1px solid var(--panel-border); color: var(--text);
+    padding: 6px; border-radius: 8px; cursor:pointer; font-size:12px;
+  }
+  .lcx-quick button.lcx-active, .lcx-quick button:hover { border-color: var(--green); color: var(--green); }
+
+  .lcx-toggle { display:flex; gap:8px; margin-top:8px; }
+  .lcx-toggle button {
+    flex:1; background:#0b1120; border:1px solid var(--panel-border); color: var(--text);
+    padding: 12px; border-radius: 10px; cursor:pointer; font-size:13px; text-align:left;
+  }
+  .lcx-toggle button.lcx-active { border-color: var(--green); background: var(--green-dim); color: var(--green); }
+  .lcx-toggle small { display:block; color: var(--muted); font-weight:400; }
+  .lcx-toggle button.lcx-active small { color: #7ddba0; }
+
+  .lcx-calc-btn {
+    width: 100%; margin-top: 16px; background: var(--green); color: #04140a;
+    border: none; padding: 12px; border-radius: 10px; font-weight: 800; font-size: 14px; cursor: pointer;
+  }
+  .lcx-calc-btn:hover { filter: brightness(1.08); }
+
+  .lcx-result-box { border: 1px solid var(--panel-border); border-radius: 12px; margin-bottom: 12px; overflow: hidden; }
+  .lcx-result-box.lcx-highlight { border-color: var(--green); }
+  .lcx-result-head { padding: 8px 14px; font-size: 12px; font-weight: 700; background: #101c33; }
+  .lcx-result-head.lcx-pen { background: #1c1533; }
+  .lcx-result-body { padding: 12px 14px; }
+  .lcx-result-row { display:flex; justify-content:space-between; align-items:baseline; margin-bottom: 4px; }
+  .lcx-result-big { font-size: 20px; font-weight: 800; }
+  .lcx-result-small { font-size: 11px; color: var(--muted); text-align:right; }
+  .lcx-detail-grid { display:grid; grid-template-columns: 1fr 1fr; gap: 0 16px; margin-top: 10px; font-size: 12px; }
+  .lcx-detail-row { display:flex; justify-content:space-between; padding: 4px 0; border-bottom: 1px dashed var(--panel-border); color: var(--muted); }
+  .lcx-detail-row span:last-child { color: var(--text); }
+  .lcx-detail-row.lcx-total span:last-child { color: var(--green); font-weight: 700; }
+  .lcx-detail-row.lcx-neg span:last-child { color: var(--red); }
+
+  .lcx-tip { background: var(--green-dim); border: 1px solid #1f4a2c; border-radius: 10px; padding: 10px 12px; font-size: 12px; color: #a7e9bc; }
+
+  .lcx-eye { background:none; border:none; color: var(--muted); cursor:pointer; font-size: 14px; }
+  .lcx-profit-card { background: #0b1120; border: 1px solid var(--panel-border); border-radius: 10px; padding: 12px; margin-bottom: 10px; }
+  .lcx-profit-card h4 { font-size: 12px; margin: 0 0 8px; color: var(--muted); display:flex; align-items:center; gap:6px; }
+  .lcx-profit-row { display:flex; justify-content:space-between; font-size: 12px; padding: 3px 0; color: var(--muted); }
+  .lcx-profit-row span:last-child { color: var(--text); }
+  .lcx-profit-row.lcx-total { border-top: 1px solid var(--panel-border); margin-top: 6px; padding-top: 8px; }
+  .lcx-profit-row.lcx-total span:last-child { color: var(--green); font-weight: 700; }
+  .lcx-profit-total-usd { color: var(--green); }
+  .lcx-profit-total-pen { color: var(--purple); }
+  .lcx-profit-final { text-align:center; padding-top: 8px; }
+  .lcx-profit-final .lcx-value { font-size: 22px; font-weight: 800; color: #facc15; }
+  .lcx-hidden-blur { filter: blur(6px); user-select: none; pointer-events: none; }
+
+  .lcx-footer { margin-top: 20px; display:grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  @media (max-width: 980px) { .lcx-footer { grid-template-columns: 1fr 1fr; } }
+  .lcx-footer .lcx-panel h4 { font-size:12px; margin:0 0 10px; color: var(--muted); }
+  .lcx-footer ul { margin:0; padding-left: 16px; font-size: 12px; color: var(--muted); }
+  .lcx-footer li { margin-bottom: 6px; }
+  .lcx-net-row { display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px; }
+  .lcx-net-fee-low { color: var(--green); }
+  .lcx-net-fee-high { color: var(--orange); }
+  .lcx-wa-btn { display:block; text-align:center; background: var(--green); color:#04140a; text-decoration:none; padding:10px; border-radius:8px; font-weight:700; font-size:13px; margin-top:8px; }
+  .lcx-support-email { display:block; text-align:center; font-size:12px; color: var(--muted); margin-top:8px; }
+
+  .lcx-warning { background: #3a1f1f; border: 1px solid #6b2c2c; color: #ffb4b4; font-size:12px; padding:8px 12px; border-radius:8px; margin-bottom: 16px; display:none; }
+  .lcx-warning.lcx-show { display:block; }
+</style>
+</head>
+<body>
+<div id="lcx-calc">
+
+  <div class="lcx-warning" id="lcx-rate-warning">
+    No se pudo obtener el precio en tiempo real. Mostrando un valor de referencia aproximado — verifica antes de confirmar la operación.
+  </div>
+
+  <div class="lcx-header">
+    <div class="lcx-brand">
+      <div class="lcx-logo">LC</div>
+      <div>
+        <div class="lcx-brand-title">EXCHANGE</div>
+        <div class="lcx-brand-sub">Casa de cambio cripto-fiat</div>
+        <div class="lcx-calc-title" style="margin-top:6px;">Calculadora de venta</div>
+        <div class="lcx-calc-sub">Tú compras USDT, entregas USD o soles al cliente</div>
+      </div>
+    </div>
+
+    <div class="lcx-box">
+      <button class="lcx-refresh" id="lcx-refresh-btn" title="Actualizar precio">⟳</button>
+      <div class="lcx-market-label">Precio de mercado</div>
+      <div class="lcx-market-value" id="lcx-market-usd">1 USDT = — USD</div>
+      <div class="lcx-market-value lcx-market-pen" id="lcx-market-pen">≈ S/ — PEN</div>
+      <div class="lcx-market-label"><span class="lcx-live-dot"></span><span id="lcx-live-label">En tiempo real</span></div>
+    </div>
+
+    <div class="lcx-box">
+      <div class="lcx-market-label">Actualizado</div>
+      <div class="lcx-market-value" id="lcx-updated-at" style="font-size:13px;">—</div>
+      <div class="lcx-market-label" style="margin-top:6px;">Fuente: CoinGecko</div>
+    </div>
+  </div>
+
+  <div class="lcx-steps">
+    <div class="lcx-step"><span class="lcx-step-num">1</span>Cliente te entrega USDT</div>
+    <span class="lcx-step-arrow">→</span>
+    <div class="lcx-step"><span class="lcx-step-num">2</span>Tú compras los USDT y entregas USD</div>
+    <span class="lcx-step-arrow">→</span>
+    <div class="lcx-step"><span class="lcx-step-num">3</span>Si desea, conviertes USD a soles (PEN)</div>
+    <div class="lcx-steps-note">🛡️ Operación segura y transparente<small>Cotizaciones referenciales. El monto final puede variar según método de pago y validaciones.</small></div>
+  </div>
+
+  <div class="lcx-grid">
+
+    <div class="lcx-panel">
+      <h3><span><span class="lcx-num-green">1.</span> DATOS DE LA OPERACIÓN</span></h3>
+
+      <label>Cliente entrega</label>
+      <select id="lcx-network"></select>
+
+      <label>Cantidad de USDT</label>
+      <input type="number" id="lcx-amount" value="1000" min="0" step="1" />
+      <div class="lcx-quick" id="lcx-quick-amounts"></div>
+
+      <h3 style="margin-top:20px;"><span class="lcx-num-green">2.</span> DESTINO QUE ELIGE EL CLIENTE</h3>
+      <label>¿En qué moneda deseas entregarle?</label>
+      <div class="lcx-toggle" id="lcx-currency-toggle">
+        <button data-currency="usd" class="lcx-active">$ USD<small>Dólares Americanos</small></button>
+        <button data-currency="pen">S/ PEN<small>Soles Peruanos</small></button>
+      </div>
+
+      <button class="lcx-calc-btn" id="lcx-calc-btn">🧮 CALCULAR OPERACIÓN</button>
+    </div>
+
+    <div class="lcx-panel">
+      <h3><span class="lcx-num-blue">3.</span> RESULTADO DE LA OPERACIÓN</h3>
+
+      <div class="lcx-result-box" id="lcx-box-usd">
+        <div class="lcx-result-head">🇺🇸 OPCIÓN 1: RECIBIR DÓLARES (USD)</div>
+        <div class="lcx-result-body">
+          <div class="lcx-result-row">
+            <div>
+              <div class="lcx-market-label">Nuestra tasa de compra de USDT</div>
+              <div class="lcx-result-big" id="lcx-buy-rate">—</div>
+            </div>
+            <div class="lcx-result-small">Monto que recibe<br><span class="lcx-result-big" id="lcx-total-usd" style="color:var(--green)">—</span></div>
+          </div>
+          <div class="lcx-detail-grid">
+            <div class="lcx-detail-row"><span>Cantidad de USDT</span><span id="lcx-d-amount">—</span></div>
+            <div class="lcx-detail-row"><span>Descuento aplicado</span><span id="lcx-d-discount" class="lcx-neg">—</span></div>
+            <div class="lcx-detail-row"><span>Precio de mercado</span><span id="lcx-d-market">—</span></div>
+            <div class="lcx-detail-row"><span>Comisión de red</span><span id="lcx-d-fee">—</span></div>
+            <div class="lcx-detail-row"><span>Valor de referencia</span><span id="lcx-d-ref">—</span></div>
+            <div class="lcx-detail-row lcx-total"><span>TOTAL RECIBE (USD)</span><span id="lcx-d-total-usd">—</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="lcx-result-box" id="lcx-box-pen">
+        <div class="lcx-result-head lcx-pen">🇵🇪 OPCIÓN 2: RECIBIR SOLES (PEN)</div>
+        <div class="lcx-result-body">
+          <div class="lcx-result-row">
+            <div>
+              <div class="lcx-market-label">Tipo de cambio USD/PEN que aplicamos</div>
+              <div class="lcx-result-big" id="lcx-fx-rate">—</div>
+            </div>
+            <div class="lcx-result-small">Monto final en soles<br><span class="lcx-result-big" id="lcx-total-pen" style="color:var(--purple)">—</span></div>
+          </div>
+          <div class="lcx-detail-grid">
+            <div class="lcx-detail-row"><span>Precio en USD (Opción 1)</span><span id="lcx-d-usd1">—</span></div>
+            <div class="lcx-detail-row"><span>Margen cambiario aplicado</span><span id="lcx-d-fxmargin" class="lcx-neg">—</span></div>
+            <div class="lcx-detail-row"><span>Tipo de cambio de referencia</span><span id="lcx-d-fxref">—</span></div>
+            <div class="lcx-detail-row lcx-total"><span>TOTAL RECIBE (PEN)</span><span id="lcx-d-total-pen">—</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="lcx-tip">💡 El cliente recibe soles al instante. Tú conviertes los USD a PEN con tu tipo de cambio.</div>
+    </div>
+
+    <div class="lcx-panel">
+      <h3><span>4. RESUMEN DE TU UTILIDAD (ESTIMADA)</span><button class="lcx-eye" id="lcx-eye-toggle" title="Mostrar/ocultar">👁️</button></h3>
+
+      <div id="lcx-profit-content">
+        <div class="lcx-profit-card">
+          <h4>🪙 Margen en compra de USDT</h4>
+          <div class="lcx-profit-row"><span>Precio de mercado</span><span id="lcx-p-market">—</span></div>
+          <div class="lcx-profit-row"><span>Tu tasa de compra</span><span id="lcx-p-buyrate">—</span></div>
+          <div class="lcx-profit-row"><span>Margen por USDT</span><span id="lcx-p-margin-usdt">—</span></div>
+          <div class="lcx-profit-row lcx-total"><span>Margen total</span><span class="lcx-profit-total-usd" id="lcx-p-margin-total-usd">—</span></div>
+        </div>
+
+        <div class="lcx-profit-card">
+          <h4>🔁 Margen cambiario (USD → PEN)</h4>
+          <div class="lcx-profit-row"><span>Tipo de cambio referencia</span><span id="lcx-p-fxref">—</span></div>
+          <div class="lcx-profit-row"><span>Tu tipo de cambio aplicado</span><span id="lcx-p-fxapplied">—</span></div>
+          <div class="lcx-profit-row"><span>Margen por USD</span><span id="lcx-p-margin-fx">—</span></div>
+          <div class="lcx-profit-row lcx-total"><span>Margen total</span><span class="lcx-profit-total-pen" id="lcx-p-margin-total-pen">—</span></div>
+        </div>
+
+        <div class="lcx-profit-card">
+          <h4>💰 Utilidad total estimada</h4>
+          <div class="lcx-profit-row"><span>En USD</span><span id="lcx-p-total-usd">—</span></div>
+          <div class="lcx-profit-row"><span>En PEN (aprox.)</span><span id="lcx-p-total-pen">—</span></div>
+          <div class="lcx-profit-final">
+            <div class="lcx-market-label">Equivalente total (PEN)</div>
+            <div class="lcx-value" id="lcx-p-total-equiv">—</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="lcx-footer">
+    <div class="lcx-panel">
+      <h4>ℹ️ Notas importantes</h4>
+      <ul>
+        <li>Cotizaciones referenciales en tiempo real.</li>
+        <li>El monto final puede variar según método de pago, banco y validaciones.</li>
+        <li>Verifica siempre la red seleccionada antes de enviar.</li>
+      </ul>
+    </div>
+    <div class="lcx-panel">
+      <h4>📊 Costos considerados</h4>
+      <ul id="lcx-cost-list"></ul>
+    </div>
+    <div class="lcx-panel">
+      <h4>🔗 Redes disponibles</h4>
+      <div id="lcx-network-list"></div>
+    </div>
+    <div class="lcx-panel">
+      <h4>🎧 ¿Dudas o soporte?</h4>
+      <p style="font-size:12px;color:var(--muted);margin:0;">Estamos para ayudarte 24/7</p>
+      <a class="lcx-wa-btn" id="lcx-wa-link" href="#" target="_blank" rel="noopener">WhatsApp</a>
+      <a class="lcx-support-email" id="lcx-support-email" href="#">soporte@lcexchange.com</a>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  // ====== CONFIGURACIÓN DEL NEGOCIO (ajustar antes de publicar) ======
+  var USDT_BUY_DISCOUNT_PCT = 0.01;   // 1% de descuento al comprar USDT (tu margen)
+  var FX_MARGIN_PCT = 0.006;          // 0.6% de margen cambiario USD -> PEN
+  var NETWORKS = [
+    { id: "TRC20", label: "USDT · Tether (TRC20)", short: "TRC20 (Tron)", feeUsdt: 0,   feeLabel: "Baja comisión", low: true },
+    { id: "ERC20", label: "USDT · Tether (ERC20)", short: "ERC20 (Ethereum)", feeUsdt: 8, feeLabel: "Mayor comisión", low: false }, // TODO: ajustar a costo real de gas
+    { id: "BEP20", label: "USDT · Tether (BEP20)", short: "BEP20 (BNB Smart Chain)", feeUsdt: 0.5, feeLabel: "Baja comisión", low: true }
+  ];
+  var QUICK_AMOUNTS = [100, 500, 1000, 5000, 10000];
+  var RATE_API_URL = ""; // p.ej. "https://api.lc-exchange.com/rate" (lc-exchange-chat-backend). Vacío = usar CoinGecko directo.
+  var WHATSAPP_URL = "https://wa.me/51900000000"; // TODO: reemplazar por el número real
+  var SUPPORT_EMAIL = "soporte@lcexchange.com";   // TODO: reemplazar por el correo real
+  var AUTO_REFRESH_MS = 60000; // refresco automático del precio (60s)
+  // =====================================================================
+
+  var root = document.getElementById("lcx-calc");
+  var state = { usdtUsd: 1, usdPen: 3.75, live: false };
+
+  function fmt(n, decimals) {
+    return Number(n).toLocaleString("es-PE", { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+  }
+
+  // --- Setup selects / quick amounts / network list ---
+  var networkSelect = document.getElementById("lcx-network");
+  NETWORKS.forEach(function (n) {
+    var opt = document.createElement("option");
+    opt.value = n.id;
+    opt.textContent = n.label + " · " + n.feeLabel;
+    networkSelect.appendChild(opt);
+  });
+
+  var quickWrap = document.getElementById("lcx-quick-amounts");
+  QUICK_AMOUNTS.forEach(function (amt) {
+    var b = document.createElement("button");
+    b.textContent = amt.toLocaleString("es-PE");
+    b.addEventListener("click", function () {
+      document.getElementById("lcx-amount").value = amt;
+      calculate();
+    });
+    quickWrap.appendChild(b);
+  });
+
+  var costList = document.getElementById("lcx-cost-list");
+  NETWORKS.forEach(function (n) {
+    var li = document.createElement("li");
+    li.textContent = "Comisión de red " + n.id + ": " + (n.feeUsdt ? n.feeUsdt + " USDT (referencial)" : "0 USDT (referencial)");
+    costList.appendChild(li);
+  });
+  var li2 = document.createElement("li");
+  li2.textContent = "No incluye costos bancarios o administrativos.";
+  costList.appendChild(li2);
+
+  var netListWrap = document.getElementById("lcx-network-list");
+  NETWORKS.forEach(function (n) {
+    var row = document.createElement("div");
+    row.className = "lcx-net-row";
+    row.innerHTML = "<span>" + n.short + "</span><span class='" + (n.low ? "lcx-net-fee-low" : "lcx-net-fee-high") + "'>" + n.feeLabel + "</span>";
+    netListWrap.appendChild(row);
+  });
+
+  document.getElementById("lcx-wa-link").href = WHATSAPP_URL;
+  var emailEl = document.getElementById("lcx-support-email");
+  emailEl.href = "mailto:" + SUPPORT_EMAIL;
+  emailEl.textContent = SUPPORT_EMAIL;
+
+  // --- Currency toggle ---
+  var selectedCurrency = "usd";
+  var toggleBtns = document.querySelectorAll("#lcx-currency-toggle button");
+  toggleBtns.forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      toggleBtns.forEach(function (b) { b.classList.remove("lcx-active"); });
+      btn.classList.add("lcx-active");
+      selectedCurrency = btn.getAttribute("data-currency");
+      calculate();
+    });
+  });
+
+  // --- Profit panel visibility toggle ---
+  var profitVisible = true;
+  document.getElementById("lcx-eye-toggle").addEventListener("click", function () {
+    profitVisible = !profitVisible;
+    var content = document.getElementById("lcx-profit-content");
+    content.classList.toggle("lcx-hidden-blur", !profitVisible);
+    this.textContent = profitVisible ? "👁️" : "🙈";
+  });
+
+  // --- Fetch price ---
+  function fetchRate() {
+    var refreshBtn = document.getElementById("lcx-refresh-btn");
+    refreshBtn.classList.add("lcx-spin");
+
+    var url = RATE_API_URL || "https://api.coingecko.com/api/v3/simple/price?ids=tether&vs_currencies=usd,pen";
+
+    fetch(url)
+      .then(function (res) { if (!res.ok) throw new Error("bad_response"); return res.json(); })
+      .then(function (data) {
+        var usdtUsd, usdPen;
+        if (RATE_API_URL) {
+          // Se asume que el backend responde { usdtUsd, usdPen }
+          usdtUsd = data.usdtUsd;
+          usdPen = data.usdPen;
+        } else {
+          usdtUsd = data.tether && data.tether.usd;
+          usdPen = data.tether && data.tether.pen && data.tether.usd ? data.tether.pen / data.tether.usd : null;
+        }
+        if (!usdtUsd || !usdPen) throw new Error("missing_data");
+
+        state.usdtUsd = usdtUsd;
+        state.usdPen = usdPen;
+        state.live = true;
+        document.getElementById("lcx-rate-warning").classList.remove("lcx-show");
+        document.getElementById("lcx-live-label").textContent = "En tiempo real";
+        renderMarket();
+        calculate();
+      })
+      .catch(function () {
+        state.live = false;
+        document.getElementById("lcx-rate-warning").classList.add("lcx-show");
+        document.getElementById("lcx-live-label").textContent = "Valor de referencia (sin conexión)";
+        renderMarket();
+        calculate();
+      })
+      .finally(function () {
+        setTimeout(function () { refreshBtn.classList.remove("lcx-spin"); }, 800);
+      });
+  }
+
+  function renderMarket() {
+    document.getElementById("lcx-market-usd").textContent = "1 USDT = " + fmt(state.usdtUsd, 4) + " USD";
+    document.getElementById("lcx-market-pen").textContent = "≈ S/ " + fmt(state.usdPen, 2) + " PEN";
+    var now = new Date();
+    document.getElementById("lcx-updated-at").textContent = now.toLocaleString("es-PE", { hour12: false });
+  }
+
+  // --- Core calculation ---
+  function calculate() {
+    var amount = parseFloat(document.getElementById("lcx-amount").value) || 0;
+    var networkId = networkSelect.value || NETWORKS[0].id;
+    var network = NETWORKS.filter(function (n) { return n.id === networkId; })[0] || NETWORKS[0];
+
+    var marketUsd = state.usdtUsd;
+    var marketFx = state.usdPen;
+
+    var buyRate = marketUsd * (1 - USDT_BUY_DISCOUNT_PCT);
+    var appliedFx = marketFx * (1 - FX_MARGIN_PCT);
+
+    var refValueUsd = amount * marketUsd;
+    var discountUsd = refValueUsd * USDT_BUY_DISCOUNT_PCT;
+    var feeUsd = network.feeUsdt * marketUsd;
+    var totalUsd = Math.max(0, refValueUsd - discountUsd - feeUsd);
+
+    var fxMarginPerUsd = marketFx * FX_MARGIN_PCT;
+    var refValuePen = totalUsd * marketFx;
+    var totalPen = totalUsd * appliedFx;
+
+    // Panel 3
+    document.getElementById("lcx-buy-rate").textContent = fmt(buyRate, 4) + " USD";
+    document.getElementById("lcx-total-usd").textContent = fmt(totalUsd, 2) + " USD";
+    document.getElementById("lcx-d-amount").textContent = fmt(amount, 2) + " USDT";
+    document.getElementById("lcx-d-discount").textContent = "-" + fmt(discountUsd, 2) + " USD (" + (USDT_BUY_DISCOUNT_PCT * 100).toFixed(2) + "%)";
+    document.getElementById("lcx-d-market").textContent = fmt(marketUsd, 4) + " USD";
+    document.getElementById("lcx-d-fee").textContent = fmt(network.feeUsdt, 2) + " USDT (" + network.id + ")";
+    document.getElementById("lcx-d-ref").textContent = fmt(refValueUsd, 2) + " USD";
+    document.getElementById("lcx-d-total-usd").textContent = fmt(totalUsd, 2) + " USD";
+
+    document.getElementById("lcx-fx-rate").textContent = fmt(appliedFx, 4) + " PEN";
+    document.getElementById("lcx-total-pen").textContent = "S/ " + fmt(totalPen, 2);
+    document.getElementById("lcx-d-usd1").textContent = fmt(totalUsd, 2) + " USD";
+    document.getElementById("lcx-d-fxmargin").textContent = "-" + fmt(fxMarginPerUsd, 4) + " PEN (" + (FX_MARGIN_PCT * 100).toFixed(2) + "%)";
+    document.getElementById("lcx-d-fxref").textContent = fmt(marketFx, 4) + " PEN";
+    document.getElementById("lcx-d-total-pen").textContent = "S/ " + fmt(totalPen, 2);
+
+    document.getElementById("lcx-box-usd").classList.toggle("lcx-highlight", selectedCurrency === "usd");
+    document.getElementById("lcx-box-pen").classList.toggle("lcx-highlight", selectedCurrency === "pen");
+
+    // Panel 4: utilidad
+    var marginPerUsdt = marketUsd - buyRate;
+    var marginTotalUsd = amount * marginPerUsdt;
+    var marginTotalPen = totalUsd * fxMarginPerUsd;
+    var equivPen = marginTotalPen + (marginTotalUsd * appliedFx);
+
+    document.getElementById("lcx-p-market").textContent = fmt(marketUsd, 4) + " USD";
+    document.getElementById("lcx-p-buyrate").textContent = fmt(buyRate, 4) + " USD";
+    document.getElementById("lcx-p-margin-usdt").textContent = fmt(marginPerUsdt, 4) + " USD (" + (USDT_BUY_DISCOUNT_PCT * 100).toFixed(2) + "%)";
+    document.getElementById("lcx-p-margin-total-usd").textContent = fmt(marginTotalUsd, 2) + " USD";
+
+    document.getElementById("lcx-p-fxref").textContent = fmt(marketFx, 4) + " PEN";
+    document.getElementById("lcx-p-fxapplied").textContent = fmt(appliedFx, 4) + " PEN";
+    document.getElementById("lcx-p-margin-fx").textContent = fmt(fxMarginPerUsd, 4) + " PEN (" + (FX_MARGIN_PCT * 100).toFixed(2) + "%)";
+    document.getElementById("lcx-p-margin-total-pen").textContent = fmt(marginTotalPen, 2) + " PEN";
+
+    document.getElementById("lcx-p-total-usd").textContent = fmt(marginTotalUsd, 2) + " USD";
+    document.getElementById("lcx-p-total-pen").textContent = fmt(marginTotalPen, 2) + " PEN";
+    document.getElementById("lcx-p-total-equiv").textContent = "S/ " + fmt(equivPen, 2);
+  }
+
+  document.getElementById("lcx-calc-btn").addEventListener("click", calculate);
+  document.getElementById("lcx-refresh-btn").addEventListener("click", fetchRate);
+  document.getElementById("lcx-amount").addEventListener("input", function () { calculate(); });
+  networkSelect.addEventListener("change", calculate);
+
+  fetchRate();
+  if (AUTO_REFRESH_MS > 0) setInterval(fetchRate, AUTO_REFRESH_MS);
+})();
+</script>
+</body>
+</html>

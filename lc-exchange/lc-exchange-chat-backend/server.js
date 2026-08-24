@@ -17,10 +17,33 @@ const app = express();
 app.use(cors({ origin: ALLOWED_ORIGIN }));
 app.use(express.json());
 
-// TODO: reemplazar por la consulta real a tu base de datos / proveedor de tasas.
-// No inventar una tasa: si no hay una fuente real conectada, devolver null.
+// Tasa de mercado en vivo desde CoinGecko (USDT/USD y USDT/PEN), con una
+// caché corta en memoria para no golpear el límite de la API pública en
+// cada request. Si CoinGecko falla, devuelve null (nunca un dato inventado).
+let rateCache = { data: null, fetchedAt: 0 };
+const RATE_CACHE_TTL_MS = 30000;
+
 async function getCurrentRate() {
-  return null; // p.ej: return await db.query("SELECT rate FROM exchange_rates ORDER BY updated_at DESC LIMIT 1");
+  const now = Date.now();
+  if (rateCache.data && now - rateCache.fetchedAt < RATE_CACHE_TTL_MS) {
+    return rateCache.data;
+  }
+
+  try {
+    const res = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=tether&vs_currencies=usd,pen");
+    if (!res.ok) throw new Error(`coingecko_${res.status}`);
+    const data = await res.json();
+    const usdtUsd = data?.tether?.usd;
+    const usdtPen = data?.tether?.pen;
+    if (!usdtUsd || !usdtPen) throw new Error("missing_fields");
+
+    const result = { usdtUsd, usdPen: usdtPen / usdtUsd, fetchedAt: new Date().toISOString() };
+    rateCache = { data: result, fetchedAt: now };
+    return result;
+  } catch (err) {
+    console.error("Error obteniendo tasa de CoinGecko:", err);
+    return null;
+  }
 }
 
 function buildSystemPrompt(rate) {
@@ -35,7 +58,7 @@ function buildSystemPrompt(rate) {
     "- Si detectas una posible operación grande o sospechosa, indica que debe pasar por verificación humana (no la valides tú).",
     "",
     rate
-      ? `Tipo de cambio referencial actual (USD/PEN): ${rate}. Aclara siempre que es referencial y puede variar al momento de la operación.`
+      ? `Tipo de cambio referencial actual (USD/PEN): ${rate.usdPen.toFixed(4)}. Aclara siempre que es referencial y puede variar al momento de la operación.`
       : "No hay tipo de cambio en vivo conectado todavía: si te preguntan la tasa, indica que deben confirmarla en la página o con un asesor.",
     "",
     "Datos del negocio (completar con la información real antes de publicar):",
@@ -52,7 +75,9 @@ app.get("/health", (_req, res) => {
 
 app.get("/rate", async (_req, res) => {
   const rate = await getCurrentRate();
-  res.json({ rate });
+  // "rate" (USD/PEN) se mantiene por compatibilidad con el ticker del widget de chat;
+  // usdtUsd/usdPen son los campos que usa la calculadora de venta.
+  res.json(rate ? { rate: rate.usdPen, usdtUsd: rate.usdtUsd, usdPen: rate.usdPen, fetchedAt: rate.fetchedAt } : { rate: null });
 });
 
 app.post("/chat", async (req, res) => {
