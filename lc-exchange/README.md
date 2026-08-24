@@ -10,10 +10,14 @@ previa (los archivos originales no se llegaron a descargar).
   público. Llama al backend en `lc-exchange-chat-backend/`.
 - `lc-exchange-sell-calculator.html` — Calculadora de venta (USDT → USD/PEN)
   para publicar en https://lc-exchange.com/. Autónoma (sin dependencias),
-  con precio en vivo desde CoinGecko, cálculo de descuento/comisión de red y
-  panel de utilidad estimada (ocultable con el ícono 👁️). Ver los
-  comentarios al inicio del archivo para configurar márgenes, comisiones por
-  red, WhatsApp y correo de soporte antes de publicar.
+  con precio en vivo desde CoinGecko, cálculo de descuento/comisión de red,
+  comparación "más barato que Binance P2P" (USD y PEN) y panel de utilidad
+  estimada (ocultable con el ícono 👁️). Incluye un Paso 5 opcional para
+  depositar USDT (QR + dirección + monto único + cronómetro) y verificar el
+  pago contra la blockchain real — se activa configurando `DEPOSIT_API_URL`
+  hacia `lc-exchange-chat-backend`. Ver los comentarios al inicio del
+  archivo para configurar márgenes, comisiones por red, WhatsApp y correo de
+  soporte antes de publicar.
 - `lc-exchange-chat-backend/` — Servidor Node/Express que conecta el widget
   de chat con la API de Claude (Anthropic) y expone `/rate` con el precio de
   CoinGecko cacheado (útil para no golpear la API pública directo desde el
@@ -34,12 +38,15 @@ previa (los archivos originales no se llegaron a descargar).
    (WhatsApp, correo).
 3. Desplegar `lc-exchange-chat-backend` (servidor propio o función
    serverless) y actualizar `API_URL` / `RATE_URL` en
-   `lc-exchange-chatbot.html`, y opcionalmente `RATE_API_URL` en
+   `lc-exchange-chatbot.html`, y `RATE_API_URL` / `DEPOSIT_API_URL` en
    `lc-exchange-sell-calculator.html`, con la URL final (recomendado si el
    tráfico es alto, para no depender del límite gratuito de CoinGecko desde
-   el navegador de cada visitante).
-4. Completar los datos de negocio (horarios, métodos de pago, requisitos
+   el navegador de cada visitante; y obligatorio para que funcione el Paso 5
+   de depósitos).
+4. Poner las direcciones de wallet **reales** en `DEPOSIT_ADDRESS_*` del
+   backend y probar con un depósito pequeño antes de anunciar la función.
+5. Completar los datos de negocio (horarios, métodos de pago, requisitos
    KYC, monedas) en `buildSystemPrompt()` dentro de `server.js`.
-5. Antes de automatizar operaciones (no solo informar/cotizar), validar con
+6. Antes de automatizar operaciones (no solo informar/cotizar), validar con
    compliance/legal los controles de identificación y reporte de
    operaciones inusuales exigidos por la SBS/UIF a casas de cambio en Perú.

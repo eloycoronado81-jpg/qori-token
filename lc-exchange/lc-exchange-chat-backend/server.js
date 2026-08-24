@@ -2,6 +2,7 @@ import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import Anthropic from "@anthropic-ai/sdk";
+import { depositsRouter, depositsConfigStatus } from "./deposits.js";
 
 const PORT = process.env.PORT || 3001;
 const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN || "*";
@@ -72,6 +73,14 @@ function buildSystemPrompt(rate) {
 app.get("/health", (_req, res) => {
   res.json({ ok: true });
 });
+
+// Qué redes de depósito están realmente configuradas (dirección real
+// puesta en .env). Útil para que el frontend sepa qué mostrar/ocultar.
+app.get("/deposits/config", (_req, res) => {
+  res.json(depositsConfigStatus());
+});
+
+app.use(depositsRouter);
 
 app.get("/rate", async (_req, res) => {
   const rate = await getCurrentRate();

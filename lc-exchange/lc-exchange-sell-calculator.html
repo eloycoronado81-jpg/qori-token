@@ -20,18 +20,18 @@
 <title>LC Exchange - Calculadora de venta</title>
 <style>
   :root {
-    --bg: #070b14;
-    --panel: #0f1526;
-    --panel-border: #1c2740;
-    --text: #e7eaf2;
-    --muted: #8a93ab;
-    --green: #22c55e;
-    --green-dim: #16321f;
-    --purple: #a78bfa;
-    --purple-dim: #241b3d;
-    --blue: #3b82f6;
-    --orange: #f59e0b;
-    --red: #ef4444;
+    --bg: #12182c;
+    --panel: #1a2340;
+    --panel-border: #2f3a5c;
+    --text: #edf0f7;
+    --muted: #9aa3bd;
+    --green: #34d399;
+    --green-dim: #1c3a34;
+    --purple: #b3a3f7;
+    --purple-dim: #2c2350;
+    --blue: #60a5fa;
+    --orange: #fbbf5c;
+    --red: #f87171;
   }
   * { box-sizing: border-box; }
   #lcx-calc {
@@ -149,6 +149,22 @@
   .lcx-vs-binance-row.lcx-vs-savings { border-top: 1px dashed var(--panel-border); margin-top: 4px; padding-top: 8px; }
   .lcx-vs-binance-row.lcx-vs-savings span:last-child { color: var(--green); font-size: 14px; font-weight: 800; }
   .lcx-vs-binance-note { font-size: 10px; color: var(--muted); margin-top: 8px; }
+
+  .lcx-deposit-panel { margin-top: 16px; }
+  .lcx-deposit-intro { font-size: 13px; color: var(--muted); margin: 0 0 12px; }
+  .lcx-deposit-msg { font-size: 13px; background: #0b1120; border: 1px solid var(--panel-border); border-radius: 10px; padding: 12px 14px; color: var(--muted); }
+  .lcx-deposit-result { margin-top: 16px; }
+  .lcx-deposit-grid { display: grid; grid-template-columns: 180px 1fr; gap: 20px; align-items: start; }
+  @media (max-width: 640px) { .lcx-deposit-grid { grid-template-columns: 1fr; justify-items: center; text-align: center; } }
+  .lcx-deposit-qr-img { width: 180px; height: 180px; background: #fff; border-radius: 10px; padding: 8px; }
+  .lcx-deposit-address { font-family: ui-monospace, "SFMono-Regular", Menlo, monospace; font-size: 13px; word-break: break-all; background: #0b1120; border: 1px solid var(--panel-border); border-radius: 8px; padding: 8px 10px; margin-top: 4px; }
+  .lcx-copy-btn { margin-top: 8px; background: #0b1120; border: 1px solid var(--panel-border); color: var(--text); padding: 6px 12px; border-radius: 8px; cursor: pointer; font-size: 12px; }
+  .lcx-copy-btn:hover { border-color: var(--green); color: var(--green); }
+  .lcx-deposit-timer { margin-top: 12px; font-size: 14px; font-weight: 700; }
+  .lcx-deposit-status { margin-top: 12px; font-size: 13px; padding: 10px 12px; border-radius: 8px; }
+  .lcx-deposit-status.lcx-status-pending { background: #1c2340; color: var(--muted); }
+  .lcx-deposit-status.lcx-status-confirmed { background: var(--green-dim); color: #9ff0c4; }
+  .lcx-deposit-status.lcx-status-expired { background: #3a1f1f; color: #ffb4b4; }
 
   .lcx-eye { background:none; border:none; color: var(--muted); cursor:pointer; font-size: 14px; }
   .lcx-profit-card { background: #0b1120; border: 1px solid var(--panel-border); border-radius: 10px; padding: 12px; margin-bottom: 10px; }
@@ -338,6 +354,35 @@
 
   </div>
 
+  <div class="lcx-panel lcx-deposit-panel" id="lcx-deposit-panel" style="display:none;">
+    <h3><span class="lcx-num-green">5.</span> DEPOSITA TUS USDT Y VERIFICA</h3>
+    <p class="lcx-deposit-intro">Genera una dirección de depósito exclusiva para esta operación. Tienes <strong id="lcx-dep-window-min">20</strong> minutos para completarla.</p>
+
+    <div id="lcx-deposit-unavailable" class="lcx-deposit-msg" style="display:none;">
+      Esta función necesita que el backend de depósitos esté desplegado y configurado (ver <code>RATE_API_URL</code>/<code>DEPOSIT_API_URL</code>). Mientras tanto, coordina el envío por WhatsApp.
+    </div>
+
+    <button class="lcx-calc-btn" id="lcx-dep-generate-btn">📥 Generar dirección de depósito</button>
+
+    <div id="lcx-deposit-result" class="lcx-deposit-result" style="display:none;">
+      <div class="lcx-deposit-grid">
+        <img id="lcx-deposit-qr-img" class="lcx-deposit-qr-img" alt="Código QR de depósito" />
+        <div class="lcx-deposit-info">
+          <div class="lcx-market-label">Red</div>
+          <div class="lcx-result-big" id="lcx-dep-network">—</div>
+          <div class="lcx-market-label" style="margin-top:10px;">Dirección de depósito</div>
+          <div class="lcx-deposit-address" id="lcx-dep-address">—</div>
+          <button class="lcx-copy-btn" id="lcx-dep-copy-btn">📋 Copiar dirección</button>
+          <div class="lcx-market-label" style="margin-top:14px;">Envía EXACTAMENTE este monto (así identificamos tu pago)</div>
+          <div class="lcx-result-big" style="color:var(--green)" id="lcx-dep-amount">—</div>
+          <div class="lcx-deposit-timer" id="lcx-dep-timer">⏳ --:--</div>
+        </div>
+      </div>
+      <button class="lcx-calc-btn" id="lcx-dep-verify-btn" style="margin-top:14px;">🔎 Ya deposité, verificar</button>
+      <div class="lcx-deposit-status lcx-status-pending" id="lcx-dep-status">Esperando tu depósito…</div>
+    </div>
+  </div>
+
   <div class="lcx-footer">
     <div class="lcx-panel">
       <h4>ℹ️ Notas importantes</h4>
@@ -386,6 +431,7 @@
   ];
   var QUICK_AMOUNTS = [100, 500, 1000, 5000, 10000];
   var RATE_API_URL = ""; // p.ej. "https://api.lc-exchange.com/rate" (lc-exchange-chat-backend). Vacío = usar CoinGecko directo.
+  var DEPOSIT_API_URL = ""; // p.ej. "https://api.lc-exchange.com" (base de lc-exchange-chat-backend). Vacío = oculta el Paso 5 (depositar y verificar).
   var WHATSAPP_URL = "https://wa.me/51900000000"; // TODO: reemplazar por el número real
   var SUPPORT_EMAIL = "soporte@lcexchange.com";   // TODO: reemplazar por el correo real
   var AUTO_REFRESH_MS = 60000; // refresco automático del precio (60s)
@@ -612,6 +658,136 @@
 
   fetchRate();
   if (AUTO_REFRESH_MS > 0) setInterval(fetchRate, AUTO_REFRESH_MS);
+
+  // ===================== Paso 5: depositar y verificar =====================
+  var currentDeposit = null;
+  var countdownInterval = null;
+  var pollInterval = null;
+
+  function setDepositStatus(text, kind) {
+    var el = document.getElementById("lcx-dep-status");
+    el.textContent = text;
+    el.className = "lcx-deposit-status lcx-status-" + kind;
+  }
+
+  function stopDepositTimers() {
+    clearInterval(countdownInterval);
+    clearInterval(pollInterval);
+  }
+
+  function startCountdown(expiresAt) {
+    clearInterval(countdownInterval);
+    function tick() {
+      var msLeft = new Date(expiresAt).getTime() - Date.now();
+      var timerEl = document.getElementById("lcx-dep-timer");
+      if (msLeft <= 0) {
+        timerEl.textContent = "⏳ Expirado";
+        stopDepositTimers();
+        setDepositStatus("⌛ El tiempo expiró. Genera una nueva dirección para intentar de nuevo.", "expired");
+        return;
+      }
+      var totalSec = Math.floor(msLeft / 1000);
+      var mm = Math.floor(totalSec / 60);
+      var ss = totalSec % 60;
+      timerEl.textContent = "⏳ Tiempo restante: " + mm + ":" + (ss < 10 ? "0" : "") + ss;
+    }
+    tick();
+    countdownInterval = setInterval(tick, 1000);
+  }
+
+  function verifyDeposit(silent) {
+    if (!currentDeposit) return;
+    fetch(DEPOSIT_API_URL + "/deposits/" + currentDeposit.id)
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        if (data.status === "confirmed") {
+          var amt = data.confirmedAmount || data.amount;
+          var txPart = data.txHash ? " (tx: " + String(data.txHash).slice(0, 10) + "…)" : "";
+          setDepositStatus("✅ ¡Depósito confirmado! Recibimos " + fmt(amt, 2) + " USDT" + txPart + ".", "confirmed");
+          stopDepositTimers();
+        } else if (data.status === "expired") {
+          setDepositStatus("⌛ El tiempo expiró. Genera una nueva dirección para intentar de nuevo.", "expired");
+          stopDepositTimers();
+        } else if (data.autoVerification === false) {
+          setDepositStatus("🕓 No pudimos verificar automáticamente todavía. Si ya enviaste el pago, un asesor lo confirmará en breve.", "pending");
+        } else if (!silent) {
+          setDepositStatus("🔎 Aún no detectamos tu depósito. Puede tardar unos minutos según la red — vuelve a intentar en un momento.", "pending");
+        }
+      })
+      .catch(function () {
+        if (!silent) setDepositStatus("No se pudo verificar en este momento. Intenta de nuevo.", "pending");
+      });
+  }
+
+  function renderDeposit(data) {
+    document.getElementById("lcx-deposit-result").style.display = "block";
+    document.getElementById("lcx-dep-network").textContent = data.network;
+    document.getElementById("lcx-dep-address").textContent = data.address;
+    document.getElementById("lcx-dep-amount").textContent = fmt(data.amount, 2) + " USDT";
+    document.getElementById("lcx-deposit-qr-img").src =
+      "https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=" + encodeURIComponent(data.address);
+
+    var windowMin = Math.round((new Date(data.expiresAt) - new Date(data.createdAt)) / 60000);
+    if (windowMin > 0) document.getElementById("lcx-dep-window-min").textContent = windowMin;
+
+    setDepositStatus("Esperando tu depósito…", "pending");
+    startCountdown(data.expiresAt);
+
+    clearInterval(pollInterval);
+    pollInterval = setInterval(function () { verifyDeposit(true); }, 15000);
+  }
+
+  function generateDeposit() {
+    if (!DEPOSIT_API_URL) return;
+    var amount = parseFloat(document.getElementById("lcx-amount").value) || 0;
+    var network = networkSelect.value || NETWORKS[0].id;
+
+    if (amount <= 0) {
+      setDepositStatus("Ingresa primero la cantidad de USDT que vas a vender.", "expired");
+      document.getElementById("lcx-deposit-result").style.display = "block";
+      return;
+    }
+
+    fetch(DEPOSIT_API_URL + "/deposits", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ network: network, usdtAmount: amount }),
+    })
+      .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+      .then(function (r) {
+        if (!r.ok) {
+          document.getElementById("lcx-deposit-result").style.display = "block";
+          if (r.data.error === "network_not_configured") {
+            setDepositStatus("La red " + network + " no tiene depósitos habilitados todavía. Elige otra red o escríbenos por WhatsApp.", "expired");
+          } else {
+            setDepositStatus("No se pudo generar la dirección de depósito. Intenta de nuevo o contáctanos.", "expired");
+          }
+          return;
+        }
+        currentDeposit = r.data;
+        renderDeposit(r.data);
+      })
+      .catch(function () {
+        document.getElementById("lcx-deposit-result").style.display = "block";
+        setDepositStatus("No se pudo conectar con el servidor de depósitos.", "expired");
+      });
+  }
+
+  document.getElementById("lcx-dep-generate-btn").addEventListener("click", generateDeposit);
+  document.getElementById("lcx-dep-verify-btn").addEventListener("click", function () { verifyDeposit(false); });
+  document.getElementById("lcx-dep-copy-btn").addEventListener("click", function () {
+    if (!currentDeposit) return;
+    var btn = this;
+    navigator.clipboard.writeText(currentDeposit.address).then(function () {
+      var original = btn.textContent;
+      btn.textContent = "✅ Copiado";
+      setTimeout(function () { btn.textContent = original; }, 1500);
+    });
+  });
+
+  if (DEPOSIT_API_URL) {
+    document.getElementById("lcx-deposit-panel").style.display = "block";
+  }
 })();
 </script>
 </body>
