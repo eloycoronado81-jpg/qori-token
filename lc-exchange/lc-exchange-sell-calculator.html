@@ -5,7 +5,8 @@
 
   ANTES DE PUBLICAR, revisa/ajusta en el bloque <script> más abajo:
   - OTHER_EXCHANGES_SPREAD_PCT: referencia del margen de otros exchanges.
-  - LC_MARGIN_VS_OTHER_RATIO: qué fracción de ese margen gana LC (0.5 = mitad).
+  - LC_MARGIN_BASE_PCT / LC_MARGIN_STANDARD_PCT / LC_MARGIN_FLOOR_USD: margen
+    propio de LC en sus dos niveles (1.7% / 1.8%, piso $1).
   - NETWORK_FEES_USDT: comisión real por red (hoy son valores de ejemplo).
   - RATE_API_URL: si despliegas lc-exchange-chat-backend, apunta aquí a su
     endpoint /rate para evitar pegarle directo a CoinGecko desde el navegador
@@ -413,13 +414,18 @@
   // consultarse desde el navegador de cada visitante). Actualízalo cada
   // cierto tiempo revisando precios reales de la competencia.
   var OTHER_EXCHANGES_SPREAD_PCT = 0.02; // 2% de ejemplo — TODO: verificar y actualizar periódicamente
-  // Margen de LC como fracción del margen de referencia de otros exchanges.
-  // 0.5 = LC gana la mitad de lo que ganaría un exchange típico en la misma
-  // operación: "gana parecido, pero no igual" — no un monto fijo. Así la
-  // ganancia de LC escala con el monto igual que la de la competencia, en
-  // vez de quedarse en un número arbitrario que no crece con la operación.
-  var LC_MARGIN_VS_OTHER_RATIO = 0.5;
-  var LC_MARGIN_PCT = OTHER_EXCHANGES_SPREAD_PCT * LC_MARGIN_VS_OTHER_RATIO; // 1% con los valores de arriba
+  // Margen de LC en dos niveles, siempre por debajo (nunca igual ni por
+  // encima) del margen de referencia de otros exchanges: "gana parecido,
+  // pero no igual". El nivel base tiene además un piso en USD, para no
+  // perder dinero en ventas muy pequeñas (emitir el comprobante y verificar
+  // el depósito cuesta lo mismo sin importar el monto).
+  var LC_MARGIN_TIER_THRESHOLD_USDT = 1000; // desde acá aplica el margen "estándar"
+  var LC_MARGIN_BASE_PCT = 0.017;     // 1.7% — montos entre MIN_USDT_AMOUNT y el umbral
+  var LC_MARGIN_STANDARD_PCT = 0.018; // 1.8% — montos desde el umbral hacia arriba
+  var LC_MARGIN_FLOOR_USD = 1.00;     // piso por operación, en USD
+  function getLcMarginPct(amount) {
+    return amount >= LC_MARGIN_TIER_THRESHOLD_USDT ? LC_MARGIN_STANDARD_PCT : LC_MARGIN_BASE_PCT;
+  }
   // Monto mínimo recomendado: con montos muy chicos, la comisión de red
   // (fija en USDT, no en %) puede ser una porción desproporcionada del total.
   var MIN_USDT_AMOUNT = 50;
@@ -564,13 +570,13 @@
     var marketUsd = state.usdtUsd;
     var marketFx = state.usdPen;
 
-    // Modelo de margen: LC gana LC_MARGIN_PCT del valor de la operación
-    // (la mitad del spread de referencia de otros exchanges — "similar,
-    // pero no igual"). La comisión de red es un costo real que se pasa al
-    // cliente, no es ganancia de LC.
+    // Modelo de margen (dos niveles + piso): la comisión de red es un costo
+    // real que se pasa al cliente, no es ganancia de LC.
     var refValueUsd = amount * marketUsd;
     var feeUsd = network.feeUsdt * marketUsd;
-    var profitUsd = refValueUsd * LC_MARGIN_PCT;
+    var lcMarginPct = getLcMarginPct(amount);
+    var profitUsd = amount > 0 ? Math.max(refValueUsd * lcMarginPct, LC_MARGIN_FLOOR_USD) : 0;
+    var effectiveMarginPct = refValueUsd > 0 ? profitUsd / refValueUsd : 0;
     var totalUsd = Math.max(0, refValueUsd - feeUsd - profitUsd);
 
     var buyRate = amount > 0 ? totalUsd / amount : 0;
@@ -593,7 +599,7 @@
     document.getElementById("lcx-buy-rate").textContent = fmt(buyRate, 4) + " USD";
     document.getElementById("lcx-total-usd").textContent = fmt(totalUsd, 2) + " USD";
     document.getElementById("lcx-d-amount").textContent = fmt(amount, 2) + " USDT";
-    document.getElementById("lcx-d-discount").textContent = "-" + fmt(profitUsd, 2) + " USD (" + (LC_MARGIN_PCT * 100).toFixed(2) + "%)";
+    document.getElementById("lcx-d-discount").textContent = "-" + fmt(profitUsd, 2) + " USD (" + (effectiveMarginPct * 100).toFixed(2) + "%)";
     document.getElementById("lcx-d-market").textContent = fmt(marketUsd, 4) + " USD";
     document.getElementById("lcx-d-fee").textContent = fmt(network.feeUsdt, 2) + " USDT (" + network.id + ")";
     document.getElementById("lcx-d-ref").textContent = fmt(refValueUsd, 2) + " USD";
@@ -648,7 +654,7 @@
 
     document.getElementById("lcx-p-market").textContent = fmt(marketUsd, 4) + " USD";
     document.getElementById("lcx-p-buyrate").textContent = fmt(buyRate, 4) + " USD";
-    document.getElementById("lcx-p-profit-usd").textContent = fmt(profitUsd, 2) + " USD (" + (LC_MARGIN_PCT * 100).toFixed(2) + "%)";
+    document.getElementById("lcx-p-profit-usd").textContent = fmt(profitUsd, 2) + " USD (" + (effectiveMarginPct * 100).toFixed(2) + "%)";
     document.getElementById("lcx-p-profit-pen").textContent = "S/ " + fmt(profitPen, 2);
     document.getElementById("lcx-p-other-profit-usd").textContent = fmt(otherExchangeProfitUsd, 2) + " USD (" + (OTHER_EXCHANGES_SPREAD_PCT * 100).toFixed(2) + "%)";
   }
