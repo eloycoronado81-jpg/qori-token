@@ -7,7 +7,16 @@ previa (los archivos originales no se llegaron a descargar).
 ## Contenido
 
 - `lc-exchange-chatbot.html` — Widget de chat flotante para pegar en el sitio
-  público. Llama al backend en `lc-exchange-chat-backend/`.
+  público (marketing). Llama al backend en `lc-exchange-chat-backend/`.
+  El mismo backend ahora también sirve de **guía dentro de la app**: hay un
+  `ChatWidget.vue` idéntico en concepto integrado directamente en el
+  dashboard web real (`AuthenticatedLayout.vue`, visible en todas las
+  páginas) y en la app móvil Ionic (`App.vue`, visible en todos los tabs).
+  Cada uno manda un campo `context` (en qué pantalla está el usuario) para
+  que el asistente adapte sus respuestas — ver `CONTEXT_LABELS` en
+  `server.js`. Esos dos archivos viven en los proyectos reales (no en este
+  repo, que no tiene acceso a GitHub de esos proyectos) y se entregan en los
+  ZIP de integración cripto.
 - `lc-exchange-sell-calculator.html` — Calculadora de venta (USDT → USD/PEN)
   para publicar en https://lc-exchange.com/. Autónoma (sin dependencias),
   con precio en vivo desde CoinGecko, cálculo de descuento/comisión de red,
