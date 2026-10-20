@@ -1,9 +1,9 @@
+import RegisterForm from "../components/auth/RegisterForm";
+
 export default function Register() {
   return (
-    <div className="min-h-screen bg-black text-white flex items-center justify-center">
-      <h1 className="text-5xl font-bold text-yellow-400">
-        Registro
-      </h1>
+    <div className="min-h-screen bg-gradient-to-br from-black via-zinc-900 to-black flex items-center justify-center px-6 py-10">
+      <RegisterForm />
     </div>
   );
 }
