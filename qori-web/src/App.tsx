@@ -14,6 +14,7 @@ import Footer from "./components/Footer";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
+import Whitepaper from "./pages/Whitepaper";
 
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 
@@ -41,6 +42,11 @@ function App() {
       <Route
         path="/"
         element={<Home />}
+      />
+
+      <Route
+        path="/whitepaper"
+        element={<Whitepaper />}
       />
 
       <Route

@@ -18,13 +18,13 @@ export default function Navbar() {
 
         {/* Navegación */}
         <ul className="hidden md:flex gap-8 font-medium items-center">
-          <li><a href="#inicio" className="hover:text-yellow-400 transition">Inicio</a></li>
-          <li><a href="#nosotros" className="hover:text-yellow-400 transition">Nosotros</a></li>
-          <li><a href="#tokenomics" className="hover:text-yellow-400 transition">Tokenomics</a></li>
-          <li><a href="#roadmap" className="hover:text-yellow-400 transition">Roadmap</a></li>
-          <li><a href="#faq" className="hover:text-yellow-400 transition">FAQ</a></li>
+          <li><a href="/#inicio" className="hover:text-yellow-400 transition">Inicio</a></li>
+          <li><a href="/#nosotros" className="hover:text-yellow-400 transition">Nosotros</a></li>
+          <li><a href="/#tokenomics" className="hover:text-yellow-400 transition">Tokenomics</a></li>
+          <li><a href="/#roadmap" className="hover:text-yellow-400 transition">Roadmap</a></li>
+          <li><a href="/#faq" className="hover:text-yellow-400 transition">FAQ</a></li>
           <li>
-            <a href="/whitepaper.md" target="_blank" rel="noopener noreferrer" className="hover:text-yellow-400 transition">
+            <a href="/whitepaper" className="hover:text-yellow-400 transition">
               Whitepaper
             </a>
           </li>

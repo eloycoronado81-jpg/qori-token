@@ -36,9 +36,7 @@ export default function Hero() {
             </button>
 
             <a
-              href="/whitepaper.md"
-              target="_blank"
-              rel="noopener noreferrer"
+              href="/whitepaper"
               className="border border-yellow-400 text-white px-8 py-4 rounded-xl
               hover:bg-yellow-400 hover:text-black transition"
             >
