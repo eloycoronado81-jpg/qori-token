@@ -2,7 +2,7 @@
 
 # QORI
 
-## Token Oficial de CriptoLC Exchange
+## Capa de inteligencia financiera
 
 **Versión:** 1.0
 
@@ -18,39 +18,124 @@
 
 # Resumen Ejecutivo
 
-QORI es el token oficial del ecosistema CriptoLC Exchange y constituye el activo digital que impulsará todas las operaciones dentro de la plataforma.
+QORI es una **capa de inteligencia financiera**: convierte información financiera compleja en decisiones personalizadas, explicables y controladas por riesgo, conectando de forma progresiva cripto, inversiones y finanzas personales en un solo sistema.
 
-El proyecto tiene como objetivo ofrecer una infraestructura financiera moderna para Latinoamérica mediante tecnología blockchain, inteligencia artificial y servicios digitales integrados.
+QORI no busca competir con exchanges como Binance o Coinbase en escala, liquidez o custodia. Juega otro partido: ayudar a la persona a entender qué ocurre con su dinero, qué opciones existen, cuánto riesgo está tomando y qué podría hacer, sobre todo cuando cuenta con poco capital.
 
----
+El token QORI no es el producto. Es la llave de acceso a los niveles avanzados del sistema. Su utilidad depende de que el servicio sea valioso por sí mismo.
 
-# Visión
-
-Convertir a CriptoLC Exchange en una de las plataformas de activos digitales más confiables e innovadoras de América Latina, impulsando la adopción responsable de la tecnología blockchain.
+**Estado actual:** prototipo. El sitio web es una demostración, el contrato del token está escrito y probado pero no desplegado ni auditado externamente, y ninguna de las etapas descritas abajo está en producción.
 
 ---
 
-# Misión
+# El problema
 
-Desarrollar un ecosistema financiero seguro, transparente y accesible que permita a personas y empresas utilizar activos digitales de forma sencilla y eficiente.
+Hoy una persona necesita una plataforma para comprar activos, otra para ver gráficos, otra para noticias, otra para medir el sentimiento del mercado y otra para administrar sus billeteras. Después tiene que interpretar todo por sí misma, sin saber cuánto riesgo asume.
+
+Con poco capital el problema es mayor: las comisiones, los mínimos de orden y el deslizamiento pueden consumir la ganancia esperada, y casi ninguna herramienta lo calcula. Además, existen tokens fraudulentos que no permiten vender, y la mayoría de las herramientas no avisan antes de comprar.
 
 ---
 
-# Ecosistema
+# Propuesta de valor
 
-El ecosistema estará compuesto por:
+El usuario no debería entrar pensando: "voy a comprar QORI porque subirá". Debe entrar pensando: "QORI me ayuda a entender qué está pasando con mi dinero, qué oportunidades existen, cuánto riesgo estoy tomando y qué podría hacer".
 
-- Exchange
-- Wallet
-- Token QORI
-- Staking
-- Marketplace
-- NFT
-- API Empresarial
-- Inteligencia Artificial
-- Aplicación Móvil
+Principios del sistema:
 
-Todos los servicios estarán integrados mediante una arquitectura modular y escalable.
+- **Explicable.** Cada resultado muestra de dónde salen los datos, qué supuestos se usaron y qué no se sabe.
+- **Controlado por riesgo.** La capa de riesgo manda sobre las demás: ninguna alternativa se muestra sin sus límites, y ninguna acción se ejecuta fuera de los límites que el propio usuario definió.
+- **Honesto con los resultados.** Los análisis incluyen comisiones y deslizamiento, y se muestran los escenarios adversos, no solo los favorables.
+- **Sin custodia.** QORI no guarda ni mueve los fondos del usuario.
+- **Sin promesas de rentabilidad.** Nadie puede garantizar ganancias. QORI ayuda a decidir mejor; no asegura resultados.
+
+---
+
+# Cómo funciona
+
+El sistema se diseña como una cadena de etapas:
+
+**Datos → Búsqueda → Estrategia → Riesgo → Consenso → QORI AI → Escenarios → Decisión → Resultado → Aprendizaje**
+
+| Etapa | Qué hace | Estado |
+|-------|----------|-------|
+| Datos | Reúne precios, volumen, noticias y datos on-chain de fuentes públicas | Diseño |
+| Búsqueda | Encuentra información relevante para la pregunta del usuario | Diseño |
+| Estrategia | Evalúa estrategias con pruebas históricas (backtest) que incluyen costos | Prototipo fuera del sitio |
+| Riesgo | Verifica contratos, calcula pérdida máxima y tamaño de posición | Prototipo fuera del sitio |
+| Consenso | Contrasta señales de varias fuentes y muestra cuando no coinciden | Diseño |
+| QORI AI | Explica el resultado en lenguaje claro y responde preguntas | Diseño |
+| Escenarios | Presenta rangos de resultados posibles, favorables y adversos | Diseño |
+| Decisión | La persona elige; QORI no decide por ella | Diseño |
+| Resultado | Registra lo ocurrido frente a lo previsto | Diseño |
+| Aprendizaje | Compara lo previsto con lo ocurrido para mejorar los modelos | Diseño |
+
+La ejecución de órdenes, si llega a ofrecerse, será la última capa: en el exchange del usuario, con claves de solo operar (nunca de retirar), con tope de capital y empezando en modo demostración.
+
+---
+
+# Ejemplo de uso
+
+Un usuario pregunta: "Tengo S/10,000. Quiero invertir durante 12 meses y no quiero perder más del 10 %. ¿Qué alternativas tengo?". QORI no debería responder "compra BTC". Debería construir la respuesta en cuatro pasos y dejar la decisión a la persona.
+
+## 1. Perfil del usuario
+
+| Dato | Ejemplo |
+|------|---------|
+| Capital | S/ 10,000 |
+| Horizonte | 12 meses |
+| Riesgo | Moderado |
+| Pérdida máxima tolerada | 10 % |
+
+## 2. Inteligencia QORI
+
+Reúne y contrasta información del mercado y del propio usuario:
+
+- Contexto de mercado
+- Volatilidad
+- Tendencia
+- Liquidez
+- Indicadores técnicos
+- Señales on-chain, cuando correspondan
+- Noticias y sentimiento
+- Correlaciones entre activos
+- Exposición que el usuario ya tiene
+
+## 3. Motor de riesgo
+
+- Escenarios favorable, base y adverso
+- Pérdida potencial en cada escenario
+- Concentración de la cartera
+- Tamaño máximo de posición
+- Nivel de confianza, basado en la evidencia disponible
+
+## 4. Alternativas de QORI
+
+QORI presenta, por ejemplo, la Alternativa A, la B y la C, de menor a mayor riesgo. De cada una explica:
+
+- **Por qué** aparece como opción para este perfil.
+- **Riesgo:** cuánto se podría perder y con qué frecuencia ocurrió algo así en el pasado.
+- **Qué tendría que ocurrir para invalidar la tesis**, es decir, la señal que indicaría que el análisis dejó de ser válido.
+- **Costos:** comisiones, diferencias de cambio y deslizamiento.
+
+**Y el usuario decide.**
+
+Lo que QORI no puede hacer: garantizar que la pérdida no supere el 10 %. Ningún activo con potencial de ganancia lo garantiza. QORI trata ese número como un límite de riesgo que se estudia y se explica, no como una promesa. Esto es información y educación, no asesoría de inversión personalizada.
+
+---
+
+# Por qué QORI
+
+| Mercado tradicional | QORI |
+|---------------------|------|
+| Mucha información | Información convertida en decisiones |
+| Herramientas genéricas | Análisis adaptado al perfil de cada persona |
+| Indicadores aislados | Contraste entre varios modelos, mostrando cuándo no coinciden |
+| Trading primero | Riesgo primero |
+| El usuario recibe una señal | QORI explica por qué, el riesgo y los escenarios |
+| El mismo sistema para todos | Un perfil financiero individual (*Financial Passport*) |
+| Se cobra por operar | Token vinculado a la utilidad del sistema |
+
+El *Financial Passport* reúne los datos del perfil del usuario para personalizar el análisis. Se tratará conforme a la normativa de protección de datos personales: solo con consentimiento y sin venta de información a terceros.
 
 ---
 
@@ -128,20 +213,15 @@ Pendiente antes del lanzamiento (aún **no** hecho): crear la billetera multifir
 
 ---
 
-# Casos de Uso
+# Utilidad del token QORI
 
-El token QORI permitirá:
+El token es una llave de acceso, no una inversión. Su uso previsto:
 
-- Pago de comisiones.
-- Staking.
-- Descuentos dentro del Exchange.
-- Acceso Premium.
-- Gobernanza.
-- Recompensas.
-- Programas de fidelización.
-- Tokenización de activos.
-- Servicios empresariales.
-- Participación en futuras aplicaciones del ecosistema.
+- **Niveles de acceso.** Un nivel gratuito con las funciones básicas y niveles avanzados (más análisis, más escenarios, más historial) que se desbloquean con QORI o con pago normal en soles o dólares.
+- **Descuentos.** Menores costos en los servicios del sistema para quien lo utilice.
+- **Participación futura.** Posibilidad de opinar sobre prioridades del producto, de forma gradual.
+
+Lo que QORI no promete: que el token suba de precio, que genere rendimientos ni que garantice ganancias de quienes usen la herramienta. Las funciones básicas deben ser útiles sin necesidad de comprar el token.
 
 ---
 
@@ -164,107 +244,75 @@ Las medidas contempladas incluyen:
 
 # Gobernanza
 
-El ecosistema evolucionará hacia un modelo de gobernanza participativa.
-
-Los poseedores del token QORI podrán participar en procesos de votación relacionados con:
-
-- Incorporación de nuevas funcionalidades.
-- Propuestas de desarrollo.
-- Uso de fondos del ecosistema.
-- Cambios relevantes en la plataforma.
-- Prioridades estratégicas.
-
-La implementación de este modelo se realizará de forma gradual conforme evolucione el proyecto.
+La gobernanza participativa es un objetivo de largo plazo y no está implementada. Si se habilita, los poseedores podrían opinar sobre prioridades del producto, siempre dentro de los límites legales y de seguridad. Hasta entonces, las decisiones las toma el equipo fundador.
 
 ---
 
 # Riesgos
 
-Todo proyecto basado en blockchain presenta riesgos que deben ser considerados.
+Todo proyecto basado en blockchain y en análisis financiero presenta riesgos que deben ser considerados:
 
-Entre los principales se encuentran:
-
-- Volatilidad del mercado.
-- Riesgo regulatorio.
-- Riesgos tecnológicos.
-- Riesgos operativos.
-- Riesgo de liquidez.
-- Riesgo de adopción.
-- Riesgo asociado a ciberataques.
-
-El equipo trabajará continuamente para identificar, mitigar y gestionar estos riesgos.
+- **Los modelos pueden fallar.** Un análisis histórico no predice el futuro, y los datos pueden ser incorrectos o llegar tarde.
+- **Pérdida de capital.** Quien invierte en activos digitales puede perder parte o todo su dinero.
+- **Volatilidad del mercado y del propio token QORI.**
+- **Riesgo regulatorio.** En Perú no existe una regulación específica para ofrecer tokens al público y las reglas sobre asesoría de inversión y publicidad financiera pueden cambiar.
+- **Riesgos tecnológicos y de seguridad**, incluidos errores en contratos y ciberataques.
+- **Riesgo de liquidez y de adopción.**
+- **Riesgo operativo.** El proyecto está en fase de prototipo.
 
 ---
 
 # Cumplimiento Normativo
 
-CriptoLC Exchange buscará operar conforme a la normativa aplicable en las jurisdicciones donde preste servicios.
+QORI buscará operar conforme a la normativa aplicable en las jurisdicciones donde preste servicios. Entre las medidas previstas:
 
-Entre las medidas previstas se incluyen:
-
-- Procesos KYC cuando sean requeridos.
-- Políticas AML.
+- **Sin promesas de rentabilidad** en el sitio, la publicidad ni el producto.
+- **Información y educación, no asesoría personalizada**, salvo que se obtengan las autorizaciones que correspondan.
+- **Validación legal previa** (SBS, UIF y SMV) antes de abrir una preventa, de ofrecer ejecución con dinero real o de promocionar el token.
+- Procesos de conocimiento del cliente (KYC) y prevención de lavado de activos cuando sean requeridos.
 - Protección de datos personales.
-- Gestión de riesgos.
-- Transparencia en las operaciones.
-- Buenas prácticas de gobierno corporativo.
 
 ---
 
 # Roadmap
 
+Las fechas son objetivos, no compromisos.
+
 ## Fase I — Fundación (2026)
 
-- Whitepaper
-- Landing
-- Contrato Inteligente
-- Comunidad
-- Preventa (sujeta a validación legal)
+- Whitepaper y sitio en modo demostración
+- Contrato del token con controles reforzados (hecho; pendiente de auditoría externa)
+- Validación legal inicial
 
-## Fase II — Lanzamiento (2027)
+## Fase II — Información, análisis y riesgo (2027)
 
-- Exchange MVP
-- Wallet
-- Dashboard
-- Staking
-- APIs
+- Datos reales de mercado
+- Simulador de estrategias con costos incluidos
+- Escáner de riesgo de contratos
+- Calculadora de tamaño de posición
 
-## Fase III — Expansión (2028)
+## Fase III — Escenarios y ejecución en demo (2028)
 
-- Aplicación móvil
-- Inteligencia Artificial
-- Tokenización
-- Empresas
-- Expansión regional
+- Respuestas explicadas y escenarios con QORI AI
+- Ejecución solo en modo demostración, con historial público
+- Niveles de acceso con QORI, sujetos a validación legal
 
 ## Fase IV — Consolidación (2029)
 
-- Gobernanza descentralizada
-- Integraciones internacionales
-- Nuevos productos financieros
-- Crecimiento del ecosistema
+- Ejecución con dinero real bajo límites del usuario, si la validación legal lo permite
+- Ampliación a otras clases de inversión y finanzas personales
+- Auditorías periódicas y métricas públicas de uso
 
 ---
 
 # Equipo
 
-El equipo fundador estará conformado por profesionales especializados en:
-
-- Blockchain.
-- Ingeniería de Software.
-- Ciberseguridad.
-- Finanzas.
-- Transformación Digital.
-- Gestión Empresarial.
-
-La información detallada será incorporada en versiones posteriores del Whitepaper.
+El equipo fundador y su experiencia se publicarán en versiones posteriores del whitepaper, junto con la información de la empresa responsable.
 
 ---
 
 # Conclusiones
 
-QORI representa el núcleo del ecosistema CriptoLC Exchange y ha sido concebido para ofrecer utilidad real, escalabilidad y sostenibilidad a largo plazo.
+QORI propone ser una capa de inteligencia financiera que ayude a las personas, especialmente a las que cuentan con poco capital, a entender el riesgo y a decidir mejor. No compite en escala con los grandes exchanges: compite en claridad, honestidad con los resultados y control del riesgo.
 
-El proyecto integra infraestructura tecnológica moderna, una economía del token diseñada para favorecer el crecimiento del ecosistema y una visión orientada a la innovación financiera en América Latina.
-
-El desarrollo del proyecto continuará mediante un enfoque progresivo, priorizando la seguridad, la transparencia y la creación de valor para usuarios, empresas y futuros participantes del ecosistema.
+El proyecto avanzará por etapas, primero con información, análisis y riesgo, y solo después con ejecución, siempre priorizando la seguridad, la transparencia y el cumplimiento normativo.
