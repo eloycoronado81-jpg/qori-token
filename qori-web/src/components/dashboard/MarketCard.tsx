@@ -36,8 +36,8 @@ export default function MarketCard() {
     {
       symbol: "QORI",
       name: "QORI",
-      price: "$0.015",
-      change: "+18.45%",
+      price: "Sin cotización",
+      change: "N/D",
       positive: true,
     },
   ];
@@ -46,7 +46,7 @@ export default function MarketCard() {
     <div className="bg-zinc-900 rounded-2xl border border-zinc-800 p-6 shadow-lg">
 
       <h2 className="text-2xl font-bold text-white mb-6">
-        Mercado
+        Mercado (datos de ejemplo)
       </h2>
 
       <div className="space-y-4">

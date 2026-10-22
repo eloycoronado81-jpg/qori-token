@@ -30,12 +30,17 @@ const roadmap = [
 
 export default function Roadmap() {
   return (
-    <section className="bg-zinc-950 text-white py-24">
+    <section id="roadmap" className="bg-zinc-950 text-white py-24">
       <div className="max-w-7xl mx-auto px-8">
 
         <h2 className="text-5xl font-bold text-center mb-16">
           Roadmap <span className="text-yellow-400">QORI</span>
         </h2>
+
+        <p className="text-center text-gray-400 max-w-3xl mx-auto -mt-8 mb-12">
+          Hoja de ruta objetivo, sujeta a cambios y a validación legal.
+          Ningún hito está completado todavía.
+        </p>
 
         <div className="grid md:grid-cols-3 gap-8">
 
@@ -51,7 +56,7 @@ export default function Roadmap() {
               <ul className="space-y-4">
                 {phase.items.map((item) => (
                   <li key={item} className="text-gray-300">
-                    ✔ {item}
+                    ○ {item}
                   </li>
                 ))}
               </ul>

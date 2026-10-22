@@ -9,7 +9,7 @@ export default function WalletCard() {
       name: "QORI",
       symbol: "QORI",
       amount: "250,000",
-      value: "$ 5,000.00",
+      value: "Sin cotización",
       color: "text-yellow-400",
     },
     {
@@ -39,7 +39,7 @@ export default function WalletCard() {
     <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-lg">
 
       <h2 className="text-2xl font-bold text-white mb-6">
-        Mi Wallet
+        Mi Wallet (demo)
       </h2>
 
       <div className="space-y-5">

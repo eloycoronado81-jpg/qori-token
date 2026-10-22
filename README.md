@@ -1,57 +1,37 @@
-# Sample Hardhat 3 Project (`node:test` and `viem`)
+# QORI Token
 
-This project showcases a Hardhat 3 project using the native Node.js test runner (`node:test`) and the `viem` library for Ethereum interactions.
+Token QORI (BEP-20 / ERC-20) y sitio web del proyecto **QORI – FC Global / CriptoLC Exchange**.
 
-To learn more about Hardhat 3, please visit the [Getting Started guide](https://hardhat.org/docs/getting-started#getting-started-with-hardhat-3). To share your feedback, join our [Hardhat 3](https://hardhat.org/hardhat3-telegram-group) Telegram group or [open an issue](https://github.com/NomicFoundation/hardhat/issues/new) in our GitHub issue tracker.
+> **Estado: pre-lanzamiento.** El contrato no está desplegado ni auditado. No hay oferta pública de venta. Nada de este repositorio es asesoría financiera.
 
-## Project Overview
+## Estructura
 
-This example project includes:
+| Carpeta | Contenido |
+|---|---|
+| `contracts/` | `QoriToken.sol` (ERC-20 + Burnable + Pausable + Ownable, OpenZeppelin, suministro fijo de 1,000,000,000) |
+| `test/` | Tests del contrato (`node:test` + viem) |
+| `qori-web/` | Sitio web (React + Vite + Tailwind), se despliega en Netlify |
+| `qori-web/docs/` | Whitepaper y documento técnico (alineados con el contrato) |
 
-- A simple Hardhat configuration file.
-- Foundry-compatible Solidity unit tests.
-- TypeScript integration tests using [`node:test`](nodejs.org/api/test.html), the new Node.js native test runner, and [`viem`](https://viem.sh/).
-- Examples demonstrating how to connect to different types of networks, including locally simulating OP mainnet.
-
-## Usage
-
-### Running Tests
-
-To run all the tests in the project, execute the following command:
+## Probar el contrato
 
 ```shell
+npm install
 npx hardhat test
 ```
 
-You can also selectively run the Solidity or `node:test` tests:
+## Probar el sitio
 
 ```shell
-npx hardhat test solidity
-npx hardhat test nodejs
+cd qori-web
+npm install
+npm run dev
 ```
 
-### Make a deployment to Sepolia
+## Antes del lanzamiento (pendiente)
 
-This project includes an example Ignition module to deploy the contract. You can deploy this module to a locally simulated chain or to Sepolia.
-
-To run the deployment to a local chain:
-
-```shell
-npx hardhat ignition deploy ignition/modules/Counter.ts
-```
-
-To run the deployment to Sepolia, you need an account with funds to send the transaction. The provided Hardhat configuration includes a Configuration Variable called `SEPOLIA_PRIVATE_KEY`, which you can use to set the private key of the account you want to use.
-
-You can set the `SEPOLIA_PRIVATE_KEY` variable using the `hardhat-keystore` plugin or by setting it as an environment variable.
-
-To set the `SEPOLIA_PRIVATE_KEY` config variable using `hardhat-keystore`:
-
-```shell
-npx hardhat keystore set SEPOLIA_PRIVATE_KEY
-```
-
-After setting the variable, you can run the deployment with the Sepolia network:
-
-```shell
-npx hardhat ignition deploy --network sepolia ignition/modules/Counter.ts
-```
+- Owner en billetera multifirma con timelock; limitar la pausa.
+- Vesting on-chain para equipo, marketing, desarrollo y reserva; bloqueo público de la liquidez.
+- Contrato de preventa propio y validación legal (SBS/UIF, SMV).
+- Auditoría independiente publicada y código verificado en el explorador.
+- Autenticación real para el panel de usuario (hoy es solo una demostración).

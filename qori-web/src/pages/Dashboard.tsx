@@ -19,6 +19,12 @@ export default function Dashboard() {
 
         <main className="flex-1 p-8 bg-black overflow-y-auto">
 
+          <div className="mb-6 rounded-xl border border-yellow-400/40 bg-yellow-400/10 px-5 py-3 text-sm text-yellow-300">
+            <strong>MODO DEMOSTRACIÓN.</strong> Los saldos, precios y variaciones de
+            esta pantalla son datos de ejemplo. QORI aún no está lanzado y no hay
+            fondos reales asociados a esta cuenta.
+          </div>
+
           <BalanceCard />
 
           <div className="mt-8">
