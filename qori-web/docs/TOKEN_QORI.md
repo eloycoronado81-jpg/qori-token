@@ -25,8 +25,8 @@ Fecha: Julio 2026
 | Supply Inicial | 1,000,000,000 |
 | Mint | No existe función de mint: el suministro se crea una sola vez en el constructor |
 | Quema | Sí (ERC20Burnable) |
-| Pausa | Sí (ERC20Pausable, solo owner). Objetivo: owner = multisig con timelock |
-| Propietario | Ownable (parámetro `initialOwner`) |
+| Pausa | Sí (ERC20Pausable), limitada: solo el owner, solo durante 365 días desde el despliegue, máximo 7 días por pausa (después cualquiera puede reanudar). Sin timelock: no hay parámetros modificables |
+| Propietario | Ownable2Step (parámetro `initialOwner`; transferencia en dos pasos). Objetivo: multifirma |
 
 ---
 
@@ -145,7 +145,7 @@ El token será compatible con:
 | Tokenomics | ✅ |
 | Documento Técnico | ✅ |
 | Whitepaper | ✅ |
-| Smart Contract | 🟡 Escrito, sin auditar |
+| Smart Contract | 🟡 Reforzado y con pruebas (32 en verde), sin auditoría externa |
 | Auditoría | ⏳ |
 | Testnet | ⏳ |
 | Mainnet | ⏳ |

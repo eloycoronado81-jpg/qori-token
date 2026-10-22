@@ -30,8 +30,8 @@ npm run dev
 
 ## Antes del lanzamiento (pendiente)
 
-- Owner en billetera multifirma con timelock; limitar la pausa.
-- Vesting on-chain para equipo, marketing, desarrollo y reserva; bloqueo público de la liquidez.
+- Ya implementado en el contrato: pausa limitada (365 días, máx. 7 días por pausa), propiedad en dos pasos y vesting on-chain (ver `docs/LANZAMIENTO.md`).
+- Crear la billetera multifirma propietaria, desplegar en testnet y bloquear públicamente la liquidez al crear el pool.
 - Contrato de preventa propio y validación legal (SBS/UIF, SMV).
 - Auditoría independiente publicada y código verificado en el explorador.
 - Autenticación real para el panel de usuario (hoy es solo una demostración).
