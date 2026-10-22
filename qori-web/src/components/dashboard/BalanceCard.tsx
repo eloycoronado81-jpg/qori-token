@@ -28,7 +28,7 @@ export default function BalanceCard() {
             </h1>
 
             <p className="mt-2 text-sm text-gray-400">
-              Última actualización: hace 2 minutos
+              Datos de ejemplo — no son saldos reales
             </p>
 
           </div>
@@ -38,7 +38,7 @@ export default function BalanceCard() {
             <ArrowUpRight size={22} />
 
             <span className="text-lg font-bold">
-              +8.42%
+              DEMO
             </span>
 
           </div>

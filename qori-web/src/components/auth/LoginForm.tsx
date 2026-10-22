@@ -34,6 +34,11 @@ export default function LoginForm() {
         <p className="text-gray-400 mt-3">
           Bienvenido nuevamente
         </p>
+
+        <p className="mt-3 text-xs text-yellow-400/80">
+          Modo demostración: el acceso aún no usa autenticación real ni
+          cuentas verdaderas.
+        </p>
       </div>
 
       <form

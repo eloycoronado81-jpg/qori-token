@@ -28,18 +28,22 @@ export default function Hero() {
           <div className="mt-10 flex gap-5 flex-wrap">
 
             <button
-              className="bg-yellow-400 text-black px-8 py-4 rounded-xl font-bold
-              hover:bg-yellow-300 transition"
+              disabled
+              title="La preventa aún no está habilitada"
+              className="bg-yellow-400/40 text-black/70 px-8 py-4 rounded-xl font-bold cursor-not-allowed"
             >
-              Comprar QORI
+              Preventa próximamente
             </button>
 
-            <button
+            <a
+              href="/whitepaper.md"
+              target="_blank"
+              rel="noopener noreferrer"
               className="border border-yellow-400 text-white px-8 py-4 rounded-xl
               hover:bg-yellow-400 hover:text-black transition"
             >
-              Ver Whitepaper
-            </button>
+              Ver Whitepaper (borrador)
+            </a>
 
           </div>
 

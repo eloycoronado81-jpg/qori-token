@@ -6,7 +6,9 @@
 
 **Versión:** 1.0
 
-**Estado:** Documento Oficial (Borrador)
+**Estado:** Borrador — no constituye oferta pública ni asesoría financiera
+
+**Última alineación con el contrato:** Octubre 2026 (BNB Chain / BEP-20)
 
 **Fecha:** Julio 2026
 
@@ -70,15 +72,15 @@ Todos los servicios estarán integrados mediante una arquitectura modular y esca
 
 ## Blockchain
 
-- Solana
-- SPL Token
+- BNB Chain (BNB Smart Chain)
+- Token BEP-20 (compatible con ERC-20), contrato en Solidity 0.8.28 basado en OpenZeppelin
 
 ## Wallets
 
-- Phantom
-- Solflare
+- MetaMask
+- Trust Wallet
 - WalletConnect
-- Integraciones compatibles con MetaMask
+- Otras wallets compatibles con EVM
 
 ---
 
@@ -88,11 +90,13 @@ Todos los servicios estarán integrados mediante una arquitectura modular y esca
 |----------|--------|
 | Nombre | QORI |
 | Símbolo | QORI |
-| Blockchain | Solana |
-| Estándar | SPL |
-| Decimales | 9 |
+| Blockchain | BNB Chain |
+| Estándar | BEP-20 |
+| Decimales | 18 |
 | Supply Máximo | 1,000,000,000 |
-| Emisión adicional | No |
+| Emisión adicional | No (el contrato no tiene función de creación de tokens tras el despliegue) |
+| Quema | Sí, cada titular puede quemar sus propios tokens |
+| Pausa | El contrato permite pausar transferencias (ver "Controles del contrato") |
 
 ---
 
@@ -100,13 +104,21 @@ Todos los servicios estarán integrados mediante una arquitectura modular y esca
 
 | Destino | % |
 |---------|--:|
-| Liquidez | 25 % |
+| Liquidez | 40 % |
 | Preventa | 20 % |
-| Ecosistema | 20 % |
-| Recompensas | 15 % |
-| Marketing | 10 % |
+| Marketing | 15 % |
+| Desarrollo | 10 % |
+| Reserva | 10 % |
 | Equipo | 5 % |
-| Reserva Estratégica | 5 % |
+
+Esta distribución coincide con el contrato `QoriToken.sol`. Versiones anteriores de este documento mostraban otra distribución; la del contrato es la vigente. La preventa solo se abrirá tras la validación legal correspondiente.
+
+## Controles del contrato
+
+- El suministro es fijo (1,000,000,000 QORI) y se crea una sola vez al desplegar.
+- El propietario del contrato puede pausar y reanudar las transferencias. Objetivo antes del lanzamiento: transferir este control a una billetera multifirma con retardo (timelock) y limitar su uso en el tiempo.
+- Objetivo antes del lanzamiento: bloqueo (vesting) on-chain para equipo, marketing, desarrollo y reserva, y bloqueo público de la liquidez.
+- Nada de lo anterior está implementado aún; se informará aquí cuando lo esté, junto con el informe de auditoría.
 
 ---
 
@@ -201,7 +213,7 @@ Entre las medidas previstas se incluyen:
 - Landing
 - Contrato Inteligente
 - Comunidad
-- Preventa
+- Preventa (sujeta a validación legal)
 
 ## Fase II — Lanzamiento (2027)
 

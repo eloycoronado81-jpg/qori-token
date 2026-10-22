@@ -17,55 +17,26 @@ export default function Navbar() {
         </div>
 
         {/* Navegación */}
-        <ul className="flex gap-8 font-medium items-center">
+        <ul className="hidden md:flex gap-8 font-medium items-center">
+          <li><a href="#inicio" className="hover:text-yellow-400 transition">Inicio</a></li>
+          <li><a href="#nosotros" className="hover:text-yellow-400 transition">Nosotros</a></li>
+          <li><a href="#tokenomics" className="hover:text-yellow-400 transition">Tokenomics</a></li>
+          <li><a href="#roadmap" className="hover:text-yellow-400 transition">Roadmap</a></li>
+          <li><a href="#faq" className="hover:text-yellow-400 transition">FAQ</a></li>
           <li>
-            <a href="#inicio" className="hover:text-yellow-400 transition">
-              Inicio
-            </a>
-          </li>
-
-          <li>
-            <a href="#servicios" className="hover:text-yellow-400 transition">
-              Servicios
-            </a>
-          </li>
-
-          <li>
-            <a href="#compra-venta" className="hover:text-yellow-400 transition">
-              Compra/Venta
-            </a>
-          </li>
-
-          <li>
-            <a href="#empresas" className="hover:text-yellow-400 transition">
-              Empresas
-            </a>
-          </li>
-
-          <li>
-            <a href="#api" className="hover:text-yellow-400 transition">
-              API
-            </a>
-          </li>
-
-          <li>
-            <a href="#whitepaper" className="hover:text-yellow-400 transition">
+            <a href="/whitepaper.md" target="_blank" rel="noopener noreferrer" className="hover:text-yellow-400 transition">
               Whitepaper
-            </a>
-          </li>
-
-          <li>
-            <a href="#contacto" className="hover:text-yellow-400 transition">
-              Contacto
             </a>
           </li>
         </ul>
 
         {/* Wallet */}
         <button
-          className="bg-yellow-400 text-black px-5 py-2.5 rounded-lg font-bold hover:bg-yellow-300 transition"
+          disabled
+          title="La conexión de wallet se habilitará con el lanzamiento"
+          className="bg-yellow-400/40 text-black/70 px-5 py-2.5 rounded-lg font-bold cursor-not-allowed"
         >
-          Connect Wallet
+          Wallet (próximamente)
         </button>
 
       </div>

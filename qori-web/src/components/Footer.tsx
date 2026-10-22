@@ -66,6 +66,14 @@ export default function Footer() {
 
           © 2026 CriptoLC-Exchange · Powered by QORI Token
 
+          <p className="mt-4 text-xs text-gray-600 max-w-3xl mx-auto leading-5">
+            QORI aún no está lanzado y no se está realizando ninguna oferta
+            pública de venta. La información de este sitio es un borrador sujeto
+            a cambios y no constituye asesoría financiera, legal ni
+            recomendación de inversión. Los activos digitales son volátiles y
+            pueden perder todo su valor.
+          </p>
+
         </div>
 
       </div>

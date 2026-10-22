@@ -9,7 +9,7 @@ const tokenomics = [
 
 export default function Tokenomics() {
   return (
-    <section className="bg-black text-white py-24">
+    <section id="tokenomics" className="bg-black text-white py-24">
       <div className="max-w-6xl mx-auto px-8">
 
         <h2 className="text-5xl font-bold text-center mb-6">

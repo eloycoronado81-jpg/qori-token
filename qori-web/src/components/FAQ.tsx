@@ -9,12 +9,12 @@ const questions = [
   {
     question: "¿Cómo puedo comprar QORI?",
     answer:
-      "Podrás comprar QORI directamente desde nuestra plataforma conectando tu wallet y utilizando USDT, BNB u otros activos compatibles.",
+      "La preventa y la compra de QORI aún no están habilitadas. Cuando se abran, se anunciarán en este sitio y estarán sujetas a la validación legal y de cumplimiento correspondiente.",
   },
   {
     question: "¿Qué blockchain utiliza?",
     answer:
-      "QORI será desplegado sobre una blockchain compatible con contratos inteligentes para ofrecer seguridad, rapidez y escalabilidad.",
+      "QORI está diseñado como token BEP-20 (compatible con ERC-20) para BNB Chain. Todavía no está desplegado en mainnet: la dirección oficial del contrato se publicará aquí solo después de la auditoría.",
   },
   {
     question: "¿Necesito registrarme?",
@@ -24,7 +24,7 @@ const questions = [
   {
     question: "¿Dónde puedo leer el Whitepaper?",
     answer:
-      "El Whitepaper estará disponible desde el menú principal y contendrá toda la información técnica, financiera y estratégica del proyecto.",
+      "Puedes leer la versión actual (borrador) del Whitepaper desde el menú principal. Es un documento en evolución: no constituye una oferta pública ni asesoría financiera.",
   },
 ];
 
@@ -36,7 +36,7 @@ export default function FAQ() {
   };
 
   return (
-    <section className="bg-black text-white py-24">
+    <section id="faq" className="bg-black text-white py-24">
       <div className="max-w-5xl mx-auto px-8">
 
         <h2 className="text-5xl font-bold text-center mb-6">

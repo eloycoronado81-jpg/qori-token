@@ -18,13 +18,15 @@ Fecha: Julio 2026
 |------------|----------------|
 | Nombre | QORI |
 | Símbolo | QORI |
-| Blockchain | Solana |
-| Estándar | SPL Token |
-| Decimales | 9 |
+| Blockchain | BNB Chain |
+| Estándar | BEP-20 (compatible con ERC-20) |
+| Decimales | 18 |
 | Supply Máximo | 1,000,000,000 |
 | Supply Inicial | 1,000,000,000 |
-| Mint Authority | CriptoLC Exchange |
-| Freeze Authority | Deshabilitada (objetivo al lanzamiento) |
+| Mint | No existe función de mint: el suministro se crea una sola vez en el constructor |
+| Quema | Sí (ERC20Burnable) |
+| Pausa | Sí (ERC20Pausable, solo owner). Objetivo: owner = multisig con timelock |
+| Propietario | Ownable (parámetro `initialOwner`) |
 
 ---
 
@@ -59,13 +61,14 @@ Distribución inicial:
 
 | Destino | % | Tokens |
 |---------|---:|----------------:|
-| Liquidez | 25 % | 250,000,000 |
+| Liquidez | 40 % | 400,000,000 |
 | Preventa | 20 % | 200,000,000 |
-| Ecosistema | 20 % | 200,000,000 |
-| Recompensas | 15 % | 150,000,000 |
-| Marketing | 10 % | 100,000,000 |
+| Marketing | 15 % | 150,000,000 |
+| Desarrollo | 10 % | 100,000,000 |
+| Reserva | 10 % | 100,000,000 |
 | Equipo | 5 % | 50,000,000 |
-| Reserva | 5 % | 50,000,000 |
+
+Esta tabla coincide con `contracts/QoriToken.sol` y con sus tests. Pendiente antes del lanzamiento: vesting on-chain y bloqueo de liquidez.
 
 ---
 
@@ -104,7 +107,7 @@ Se contemplan las siguientes medidas:
 
 ## Etapa 2
 
-- Desarrollo del contrato SPL
+- Desarrollo del contrato BEP-20 (Solidity)
 - Testnet
 - Auditoría
 
@@ -126,10 +129,9 @@ Se contemplan las siguientes medidas:
 
 El token será compatible con:
 
-- Phantom
-- Solflare
+- MetaMask
+- Trust Wallet
 - WalletConnect
-- Integraciones compatibles con MetaMask
 - CriptoLC Exchange
 - APIs del ecosistema
 
@@ -143,7 +145,7 @@ El token será compatible con:
 | Tokenomics | ✅ |
 | Documento Técnico | ✅ |
 | Whitepaper | ✅ |
-| Smart Contract | ⏳ |
+| Smart Contract | 🟡 Escrito, sin auditar |
 | Auditoría | ⏳ |
 | Testnet | ⏳ |
 | Mainnet | ⏳ |
