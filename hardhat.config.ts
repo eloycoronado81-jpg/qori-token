@@ -34,5 +34,12 @@ export default defineConfig({
       url: configVariable("SEPOLIA_RPC_URL"),
       accounts: [configVariable("SEPOLIA_PRIVATE_KEY")],
     },
+    // Red de pruebas de BNB Chain. Mainnet se agregara solo despues de la auditoria.
+    bscTestnet: {
+      type: "http",
+      chainType: "l1",
+      url: configVariable("BSC_TESTNET_RPC_URL"),
+      accounts: [configVariable("BSC_TESTNET_PRIVATE_KEY")],
+    },
   },
 });
