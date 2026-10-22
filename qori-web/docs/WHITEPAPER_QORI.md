@@ -96,7 +96,7 @@ Todos los servicios estarán integrados mediante una arquitectura modular y esca
 | Supply Máximo | 1,000,000,000 |
 | Emisión adicional | No (el contrato no tiene función de creación de tokens tras el despliegue) |
 | Quema | Sí, cada titular puede quemar sus propios tokens |
-| Pausa | El contrato permite pausar transferencias (ver "Controles del contrato") |
+| Pausa | Limitada: solo el primer año y máximo 7 días por pausa (ver "Controles del contrato") |
 
 ---
 
@@ -115,10 +115,16 @@ Esta distribución coincide con el contrato `QoriToken.sol`. Versiones anteriore
 
 ## Controles del contrato
 
-- El suministro es fijo (1,000,000,000 QORI) y se crea una sola vez al desplegar.
-- El propietario del contrato puede pausar y reanudar las transferencias. Objetivo antes del lanzamiento: transferir este control a una billetera multifirma con retardo (timelock) y limitar su uso en el tiempo.
-- Objetivo antes del lanzamiento: bloqueo (vesting) on-chain para equipo, marketing, desarrollo y reserva, y bloqueo público de la liquidez.
-- Nada de lo anterior está implementado aún; se informará aquí cuando lo esté, junto con el informe de auditoría.
+Estado: **implementado en el código, sin desplegar y sin auditoría externa**.
+
+- El suministro es fijo (1,000,000,000 QORI) y se crea una sola vez al desplegar. No existe función para crear más tokens.
+- **Pausa limitada.** El propietario solo puede pausar las transferencias durante los primeros 365 días desde el despliegue. Una pausa dura como máximo 7 días: pasado ese plazo, cualquier persona puede reanudarlas. Si la ventana de 365 días se cierra con una pausa activa, también puede levantarla cualquiera.
+- **Propiedad en dos pasos.** Transferir la propiedad exige que la nueva dirección la acepte. No se puede renunciar a la propiedad mientras el contrato esté pausado.
+- **Distribución verificable.** Las seis direcciones de la distribución deben ser distintas, no nulas y distintas del propio contrato.
+- **Vesting on-chain.** Equipo, marketing, desarrollo y reserva se entregan a contratos de bloqueo (`QoriVestingWallet`) con *cliff* y liberación lineal: equipo 36 meses con cliff de 12; marketing 24 meses sin cliff; desarrollo 24 meses con cliff de 6; reserva 48 meses con cliff de 12. Son una propuesta editable antes del despliegue.
+- **Sin *timelock*.** El contrato no tiene parámetros modificables tras el despliegue, así que un retardo no protegería nada y solo frenaría la respuesta ante una emergencia. La protección es un propietario multifirma más la pausa limitada.
+
+Pendiente antes del lanzamiento (aún **no** hecho): crear la billetera multifirma propietaria, desplegar en testnet y luego en mainnet, bloquear la liquidez en un servicio público al crear el pool, revisión externa independiente del contrato y validación legal previa a cualquier preventa. Detalle y lista de pasos en `docs/LANZAMIENTO.md` del repositorio. Este documento se actualizará cuando cada punto se cumpla.
 
 ---
 
